@@ -1,0 +1,342 @@
+{% set active_page = 'schedule' %}
+{% extends "base.html" %}
+
+{% block title %}APEX VELOCITY | 2026 Season Schedule{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/schedule.css">
+{% endblock %}
+
+{% block content %}
+<!-- React schedule data injected server-side -->
+<script type="application/json" id="schedule-data">{{ events | tojson }}</script>
+
+<div class="page-content">
+  <div id="react-schedule-root"></div>
+</div>
+
+<!-- React + Babel (JSX lives in this template, not a separate .js file) -->
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+{% raw %}
+<script type="text/babel">
+/* APEX VELOCITY - Schedule Page React App */
+
+const initialEvents = JSON.parse(document.getElementById('schedule-data').textContent);
+
+function pad(n) { return n < 10 ? '0' + n : n; }
+
+/* ── Event Card ─────────────────────────────────────────── */
+function EventCard({ event, expanded, onClick }) {
+  const [qualifying,  setQualifying]  = React.useState(null);
+  const [race,        setRace]        = React.useState(null);
+  const [sprintQuali, setSprintQuali] = React.useState(null);
+  const [sprintRace,  setSprintRace]  = React.useState(null);
+  const [loading,     setLoading]     = React.useState(false);
+
+  const isSprint   = event.Format === 'sprint';
+  const dateParsed = new Date(event.EventDateTimeIso).getTime();
+  const isPast     = !isNaN(dateParsed) && dateParsed < Date.now();
+
+  React.useEffect(() => {
+    if (expanded && isPast && !qualifying && !loading) {
+      setLoading(true);
+      const fetches = [
+        fetch(`/api/qualifying/2026/${event.RoundNumber}`).then(r => r.json()),
+        fetch(`/api/results/2026/${event.RoundNumber}`).then(r => r.json()),
+      ];
+      if (isSprint) {
+        fetches.push(
+          fetch(`/api/sprint_shootout/2026/${event.RoundNumber}`).then(r => r.json()).catch(() => ({ data: [] })),
+          fetch(`/api/sprint/2026/${event.RoundNumber}`).then(r => r.json()).catch(() => ({ data: [] })),
+        );
+      }
+      Promise.all(fetches).then(results => {
+        if (results[0]?.status === 'success') setQualifying(results[0].data);
+        if (results[1]?.status === 'success') setRace(results[1].data);
+        if (isSprint) {
+          if (results[2]?.status === 'success') setSprintQuali(results[2].data);
+          if (results[3]?.status === 'success') setSprintRace(results[3].data);
+        }
+        setLoading(false);
+      });
+    }
+  }, [expanded, isPast]);
+
+  function ResultPanel({ title, data, isQuali }) {
+    return (
+      <div style={{
+        background: 'rgba(255,255,255,0.02)',
+        border: '1px solid rgba(255,255,255,0.05)',
+        padding: '1.25rem',
+        display: 'flex',
+        flexDirection: 'column',
+        height: 320
+      }}>
+        <h3 style={{
+          fontFamily: 'var(--font-headline)',
+          color: 'var(--f1-red)',
+          fontSize: '0.7rem',
+          letterSpacing: '0.15em',
+          fontWeight: 900,
+          textTransform: 'uppercase',
+          marginBottom: '1rem',
+          paddingBottom: '0.5rem',
+          borderBottom: '2px solid var(--f1-red)',
+          width: 'fit-content'
+        }}>
+          {title}
+        </h3>
+        {loading && <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem', padding: '1rem', textAlign: 'center' }}>Synchronizing data...</div>}
+        {!loading && data && data.length === 0 && <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.7rem', textAlign: 'center', padding: '1rem' }}>Data not yet available</div>}
+        {!loading && data && data.length > 0 && (
+          <div style={{ maxHeight: '450px', overflowY: 'auto' }} className="nice-scroll space-y-px">
+            {data.map((row, i) => (
+              <div key={i} style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '0.65rem 0.75rem',
+                background: 'rgba(255,255,255,0.03)',
+                marginBottom: '1px',
+                transition: 'all 0.2s ease'
+              }}>
+                 <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', overflow: 'hidden', flex: 1 }}>
+                  <span style={{ color: i < 3 ? (row.Color || 'var(--f1-red)') : 'rgba(255,255,255,0.4)', fontSize: '0.7rem', fontWeight: 900, minWidth: '1.2rem' }}>{row.Position}</span>
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontWeight: 800, fontSize: '0.85rem', color: row.Color || '#fff', textTransform: 'uppercase', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{row.Driver}</span>
+                    <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>{row.Team}</span>
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right', minWidth: '4.5rem' }}>
+                  <div style={{
+                    fontFamily: 'monospace',
+                    fontSize: '0.85rem',
+                    color: i === 0 ? 'var(--f1-red)' : '#fff',
+                    fontWeight: i === 0 ? 900 : 500,
+                    letterSpacing: '-0.02em'
+                  }}>
+                    {row.Time || '–'}
+                  </div>
+                  {row.Points > 0 && <div style={{ fontSize: '0.6rem', color: 'var(--f1-red)', fontWeight: 900, marginTop: '-2px' }}>+{row.Points} PTS</div>}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{
+      border: `1px solid ${expanded ? 'rgba(225,6,0,0.5)' : 'rgba(255,255,255,0.05)'}`,
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      gridColumn: expanded ? '1 / -1' : 'span 1',
+      boxShadow: expanded ? '0 12px 48px rgba(0,0,0,0.5), 0 0 20px rgba(225,6,0,0.1)' : 'none',
+      position: 'relative',
+      zIndex: expanded ? 10 : 1,
+    }}>
+      <div
+        style={{ background: 'var(--surface-low)', cursor: 'pointer', height: '100%', display: 'flex', flexDirection: 'column' }}
+        onClick={onClick}
+        onMouseEnter={e => { if (!expanded) e.currentTarget.style.background = 'var(--surface-bright)'; }}
+        onMouseLeave={e => { if (!expanded) e.currentTarget.style.background = 'var(--surface-low)'; }}
+      >
+        <div style={{ padding: '1.75rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              <div style={{ fontFamily: 'var(--font-headline)', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.2em', color: 'var(--f1-red)', textTransform: 'uppercase' }}>
+                ROUND {pad(event.RoundNumber || 0)}
+              </div>
+              <h2 style={{
+                fontFamily: 'var(--font-headline)',
+                fontSize: '1.75rem',
+                fontWeight: 900,
+                fontStyle: 'italic',
+                letterSpacing: '-0.01em',
+                textTransform: 'uppercase',
+                lineHeight: 1,
+                margin: 0,
+                height: '4.5rem',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                paddingRight: '0.75rem'
+              }}>
+                {event.EventName.toUpperCase().includes(' GRAND PRIX')
+                  ? <React.Fragment>
+                      <span style={{ overflow: 'visible' }}>{event.EventName.toUpperCase().split(' GRAND PRIX')[0]}</span>
+                      <span style={{ color: 'var(--f1-red)', overflow: 'visible' }}>GRAND PRIX</span>
+                    </React.Fragment>
+                  : event.EventName
+                }
+              </h2>
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+              {isPast && <span style={{ background: 'rgba(225,6,0,0.15)', color: 'var(--f1-red)', padding: '0.25rem 0.6rem', fontSize: '0.55rem', fontWeight: 900, letterSpacing: '0.15em', borderRadius: '2px' }}>COMPLETED</span>}
+              {isSprint && <span style={{ background: 'rgba(255,255,255,0.07)', color: '#fff', padding: '0.25rem 0.6rem', fontSize: '0.55rem', fontWeight: 700, borderRadius: '2px' }}>SPRINT</span>}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', flex: 1 }}>
+            <div style={{ flex: '1 1 300px' }}>
+              <div style={{ height: '3rem', background: 'rgba(255,255,255,0.02)', position: 'relative', overflow: 'hidden', marginBottom: '1.25rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <div style={{ position: 'absolute', bottom: '0.75rem', left: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '1rem', color: 'var(--f1-red)' }}>location_on</span>
+                  <span style={{ fontFamily: 'var(--font-headline)', fontSize: '0.65rem', color: '#fff', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                    {event.Location}, {event.Country}
+                  </span>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem', padding: '0.75rem 1rem', background: 'rgba(255,255,255,0.03)', borderLeft: '3px solid var(--f1-red)' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '1.2rem', color: 'var(--f1-red)' }}>calendar_month</span>
+                <span style={{ fontFamily: 'var(--font-headline)', fontSize: '0.85rem', fontWeight: 700, color: '#fff', letterSpacing: '0.05em' }}>
+                  {event.EventDate}
+                </span>
+              </div>
+
+              <div style={{ background: 'rgba(0,0,0,0.2)', padding: '1.25rem', border: '1px solid rgba(255,255,255,0.03)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', paddingBottom: '0.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <span style={{ fontFamily: 'var(--font-headline)', fontSize: '0.6rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'var(--text-muted)', fontWeight: 700 }}>SESSION SCHEDULE (IST)</span>
+                </div>
+                <div style={{ display: 'grid', gap: '0.5rem' }}>
+                  {event.Sessions && event.Sessions.map((s, i) => {
+                    const parts = s.time.split(' ');
+                    const timeStr = parts.pop() || '';
+                    const dateStr = parts.length >= 3 ? `${parts[2]} ${parts[1]}` : '';
+
+                    const prevSession = i > 0 ? event.Sessions[i-1] : null;
+                    const prevParts = prevSession ? prevSession.time.split(' ') : [];
+                    const prevDateStr = prevParts.length >= 3 ? `${prevParts[2]} ${prevParts[1]}` : '';
+                    const showDate = dateStr !== prevDateStr;
+
+                    return (
+                      <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', minWidth: '4.5rem', alignItems: 'center' }}>
+                          {showDate && (
+                            <span style={{ fontFamily: 'var(--font-headline)', fontSize: '0.65rem', fontWeight: 900, color: 'var(--f1-red)', letterSpacing: '0.05em' }}>
+                              {dateStr.toUpperCase()}
+                            </span>
+                          )}
+                        </div>
+                        <span style={{ fontFamily: 'var(--font-headline)', fontSize: '0.65rem', letterSpacing: '0.1em', color: '#fff', fontWeight: 600 }}>{s.name}</span>
+                        <div style={{ height: '1px', flex: 1, borderTop: '1px dotted rgba(255,255,255,0.1)', margin: '0 0.75rem' }}></div>
+                        <span style={{ fontFamily: 'monospace', fontSize: '0.7rem', color: 'var(--f1-red)', fontWeight: 700 }}>{timeStr}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {expanded && isPast && (
+              <div style={{ flex: '3', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', borderLeft: '1px solid rgba(255,255,255,0.05)', paddingLeft: '2rem' }}>
+                 {isSprint && <ResultPanel title="Sprint SQ" data={sprintQuali} isQuali={true} />}
+                 {isSprint && <ResultPanel title="Sprint Race" data={sprintRace} isQuali={false} />}
+                 <ResultPanel title="Qualifying" data={qualifying} isQuali={true} />
+                 <ResultPanel title="Race" data={race} isQuali={false} />
+              </div>
+            )}
+          </div>
+        </div>
+        <div style={{ height: '4px', background: expanded ? (event.Color || 'var(--f1-red)') : 'rgba(255,255,255,0.05)', transition: 'background 0.3s' }}></div>
+      </div>
+    </div>
+  );
+}
+
+function ScheduleApp() {
+  const [events]     = React.useState(initialEvents);
+  const [nextEvent,  setNextEvent]  = React.useState(null);
+  const [countdown,  setCountdown]  = React.useState('00:00:00:00');
+  const [expandedId, setExpandedId] = React.useState(null);
+
+  React.useEffect(() => {
+    if (!events || events.length === 0) return;
+    const now = Date.now();
+    const upcoming = events.find(e => !isNaN(new Date(e.EventDateTimeIso).getTime()) && new Date(e.EventDateTimeIso).getTime() >= now);
+    setNextEvent(upcoming || events[events.length - 1]);
+  }, [events]);
+
+  React.useEffect(() => {
+    if (!nextEvent || isNaN(new Date(nextEvent.EventDateTimeIso).getTime())) return;
+    const target = new Date(nextEvent.EventDateTimeIso).getTime();
+    const interval = setInterval(() => {
+      const diff = target - Date.now();
+      if (diff <= 0) { setCountdown('00:00:00:00'); return; }
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff / 3600000) % 24);
+      const m = Math.floor((diff / 60000) % 60);
+      const s = Math.floor((diff / 1000) % 60);
+      setCountdown(`${pad(d)}:${pad(h)}:${pad(m)}:${pad(s)}`);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [nextEvent]);
+
+  const total     = events ? events.length : 24;
+  const completed = events ? events.filter(e => new Date(e.EventDateTimeIso).getTime() < Date.now()).length : 0;
+  const pct       = total > 0 ? (completed / total) * 100 : 0;
+
+  return (
+    <React.Fragment>
+      <div style={{ background: 'var(--surface-low)', padding: '1.25rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', position: 'relative', overflow: 'hidden' }}>
+        <div>
+          <div style={{ fontFamily: 'var(--font-headline)', fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.3em', color: 'var(--f1-red)', textTransform: 'uppercase', marginBottom: '0.35rem' }}>{total} GLOBAL ROUNDS</div>
+          <h1 style={{ fontFamily: 'var(--font-headline)', fontSize: 'clamp(1.8rem,4vw,3rem)', fontWeight: 900, fontStyle: 'italic', letterSpacing: '-0.03em', textTransform: 'uppercase', lineHeight: 1 }}>SEASON SCHEDULE</h1>
+        </div>
+
+        <div style={{ background: 'rgba(0,0,0,0.35)', padding: '0.75rem 1.25rem', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.05)', minWidth: '14rem' }}>
+          <div style={{ fontFamily: 'var(--font-headline)', fontSize: '0.55rem', fontWeight: 700, letterSpacing: '0.2em', color: 'var(--f1-red)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Championship Progress</div>
+          <div style={{ height: '0.35rem', background: '#131313', borderRadius: '9999px', overflow: 'hidden', marginBottom: '0.4rem' }}>
+            <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg,#ff6b66,var(--f1-red))', transition: 'width 1s ease-out' }}></div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'var(--font-headline)', fontSize: '0.6rem', fontWeight: 700 }}>
+            <span>{completed} / {total} ROUNDS</span><span>{pct.toFixed(1)}%</span>
+          </div>
+        </div>
+
+        {nextEvent && (
+          <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
+            <div>
+              <div style={{ fontFamily: 'var(--font-headline)', fontSize: '0.55rem', letterSpacing: '0.2em', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', marginBottom: '0.2rem' }}>UPCOMING RACE</div>
+              <div style={{ fontFamily: 'var(--font-headline)', fontSize: '1.1rem', fontWeight: 900, fontStyle: 'italic' }}>{nextEvent.EventName}</div>
+            </div>
+            <div>
+              <div style={{ fontFamily: 'var(--font-headline)', fontSize: '0.55rem', letterSpacing: '0.2em', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', marginBottom: '0.2rem' }}>LIVE COUNTDOWN (IST)</div>
+              <div style={{ fontFamily: 'monospace', fontSize: '1.6rem', fontWeight: 900, color: 'var(--f1-red)', letterSpacing: '-0.02em' }}>{countdown}</div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div style={{ padding: '0.5rem 0' }}>
+        {(events && events.length > 0) ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: '1.5rem' }}>
+            {events.map((event, idx) => (
+              <EventCard
+                key={idx}
+                event={event}
+                expanded={expandedId === idx}
+                onClick={() => setExpandedId(expandedId === idx ? null : idx)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '5rem', color: 'rgba(255,255,255,0.2)' }}>
+            <span className="material-symbols-outlined" style={{ fontSize: '2.5rem', display: 'block', marginBottom: '0.75rem', animation: 'spin 1.5s linear infinite' }}>data_usage</span>
+            <span style={{ fontFamily: 'var(--font-headline)', fontSize: '0.6rem', letterSpacing: '0.4em', textTransform: 'uppercase' }}>SYNCHRONIZING CALENDAR DATA...</span>
+          </div>
+        )}
+      </div>
+    </React.Fragment>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('react-schedule-root'));
+root.render(<ScheduleApp />);
+</script>
+{% endraw %}
+{% endblock %}

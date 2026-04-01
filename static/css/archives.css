@@ -1,0 +1,237 @@
+/* Archives Page Styles */
+
+.f1-red-text {
+  color: var(--f1-red);
+}
+
+.page-header--archives {
+  position: relative;
+  z-index: 10000;
+}
+
+.archives-data-card {
+  animation-delay: 0.1s;
+}
+
+.archives-header-actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.archives-form {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.selector-card {
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  overflow: visible;
+}
+
+.selector-icon {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+}
+
+.view-toggles-container {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.view-toggle-badge {
+  text-decoration: none !important;
+  cursor: pointer;
+  padding: 0.6rem 1.2rem !important;
+  white-space: nowrap;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+/* =========================
+   FIX: TABLE ALIGNMENT CORE
+   ========================= */
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; /* CRITICAL FIX */
+}
+
+/* Ensure header + body align */
+.data-table th, 
+.data-table td {
+  padding: 0.75rem 1.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* =========================
+   COLUMN WIDTHS (DRIVERS)
+   ========================= */
+
+.col-pos { width: 8%; }
+.col-name { width: 28%; }
+.col-team { width: 22%; }
+.col-wins { width: 10%; }
+.col-podiums { width: 10%; }
+.col-pts { width: 12%; }
+
+/* =========================
+   OTHER TABLE TYPES
+   ========================= */
+
+.col-archive-stats { width: 120px; min-width: 120px; }
+.col-archive-points { width: 140px; min-width: 140px; }
+
+/* =========================
+   CELL STYLING
+   ========================= */
+
+.pos-col {
+  width: 60px; /* FORCE column presence */
+  min-width: 60px;
+  text-align: left;
+  color: rgba(255,255,255,0.2);
+  font-family: var(--font-headline);
+  font-weight: 900;
+  font-style: italic;
+  font-size: 1.1rem;
+}
+
+.qual-pos-col {
+  font-family: var(--font-headline);
+  font-weight: 900;
+  font-style: italic;
+  color: rgba(255,255,255,0.3);
+}
+
+.name-col {
+  font-family: var(--font-headline);
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--team-color, inherit);
+}
+
+.stat-val {
+  font-family: var(--font-headline);
+  font-weight: 700;
+}
+
+.points-val {
+  font-family: var(--font-headline);
+  font-size: 1.3rem;
+  font-weight: 900;
+}
+
+.time-val {
+  font-family: var(--font-headline);
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.best-lap-val {
+  font-family: var(--font-headline);
+  font-weight: 700;
+  color: var(--f1-red);
+}
+
+/* =========================
+   EMPTY STATE
+   ========================= */
+
+.empty-state {
+  text-align: center;
+  padding: 4rem;
+  color: var(--text-muted);
+}
+
+.empty-state-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.empty-state-sub {
+  font-size: 0.8rem;
+  opacity: 0.6;
+}
+
+/* =========================
+   DROPDOWN
+   ========================= */
+
+.archives-dropdown {
+    position: relative;
+    width: 100%;
+    min-width: 140px;
+    cursor: pointer;
+}
+
+.archives-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: white;
+    font-family: var(--font-headline);
+    font-weight: 700;
+    padding-right: 1.5rem;
+    position: relative;
+}
+
+.archives-trigger::after {
+    content: "expand_more";
+    font-family: 'Material Symbols Outlined';
+    position: absolute;
+    right: 0;
+    color: var(--f1-red);
+    font-size: 1.2rem;
+}
+
+.archives-menu {
+    position: absolute;
+    top: calc(100% + 15px);
+    left: -1rem;
+    right: -1rem;
+    background: #1a1a1a;
+    border: 1px solid var(--outline-variant);
+    border-radius: 4px;
+    z-index: 5000;
+    display: none;
+    max-height: 350px;
+    overflow-y: auto;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8);
+}
+
+.archives-item {
+    padding: 0.8rem 1.25rem;
+    color: white;
+    font-family: var(--font-headline);
+    font-weight: 500;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.archives-item:hover {
+    background: var(--f1-red);
+    padding-left: 1.5rem;
+}
+
+.archives-item.selected {
+    background: rgba(225, 6, 0, 0.15);
+    border-left: 4px solid var(--f1-red);
+}
+
+.archives-dropdown.active .archives-menu {
+    display: block;
+}

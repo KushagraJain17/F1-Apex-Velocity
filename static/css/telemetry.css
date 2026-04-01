@@ -1,0 +1,137 @@
+/* ───────────────────────────────────────────────────────
+   TELEMETRY PAGE — full-page layout
+─────────────────────────────────────────────────────── */
+html, body { height: 100%; overflow: hidden; background: #0a0a0a; }
+
+.tl-shell {
+  display: flex;
+  height: calc(100vh - var(--nav-h));
+  /* Removed margin-top to avoid double-offset from .page-shell */
+  overflow: hidden;
+}
+
+/* ── Sidebar ── */
+.tl-sidebar {
+  width: 220px; flex-shrink: 0;
+  background: #0e0e0e; border-right: 1px solid rgba(255,255,255,0.06);
+  display: flex; flex-direction: column; z-index: 10;
+}
+.tl-sidebar-hd { padding: 1.25rem 1rem 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.tl-sidebar-title { font-family: var(--font-headline); font-size: 0.6rem; font-weight: 900; letter-spacing: 0.25em; text-transform: uppercase; color: var(--f1-red); }
+.tl-sidebar-sub { font-size: 0.5rem; color: var(--text-muted); margin-top: 4px; letter-spacing: 0.05em; }
+
+.tl-driver-list { flex: 1; overflow-y: auto; padding: 0.5rem 0; }
+.tl-drow { display: flex; align-items: center; gap: 0.75rem; padding: 0.7rem 1rem; cursor: pointer; transition: 0.1s; border-left: 3px solid transparent; }
+.tl-drow:hover { background: rgba(255,255,255,0.04); }
+.tl-drow.active { background: rgba(225,6,0,0.1); border-left-color: var(--f1-red); }
+.tl-drow-pos { font-family: var(--font-headline); font-size: 0.7rem; font-weight: 900; color: var(--text-muted); min-width: 1.2rem; }
+.tl-drow-abbr { font-family: var(--font-headline); font-size: 0.75rem; font-weight: 700; flex: 1; }
+.tl-drow-t { font-family: monospace; font-size: 0.6rem; color: var(--text-muted); opacity: 0.6; }
+
+/* ── Main Area ── */
+.tl-main { flex: 1; display: flex; flex-direction: column; background: var(--bg); min-width: 0; position: relative; overflow: hidden; /* Fix footer overflow */ }
+
+/* Top Bar */
+.tl-topbar {
+  padding: 0.75rem 1.5rem; background: #141414; border-bottom: 1px solid rgba(255,255,255,0.05);
+  display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; z-index: 20;
+}
+.tl-select {
+  background: #1f1f1f; border: 1px solid rgba(255,255,255,0.1); color: #fff;
+  font-family: var(--font-headline); font-size: 0.65rem; font-weight: 700; text-transform: uppercase;
+  padding: 0.4rem 0.6rem; cursor: pointer; outline: none; border-radius: 2px;
+}
+.tl-select:focus { border-color: var(--f1-red); }
+.tl-lbl { font-family: var(--font-headline); font-size: 0.5rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.15em; }
+.tl-event-name { font-family: var(--font-headline); font-size: 0.8rem; font-weight: 900; font-style: italic; text-transform: uppercase; flex: 1; color: rgba(255,255,255,0.15); }
+
+/* Body Layout — Split Evenly into 3 columns */
+.tl-body { flex: 1; display: flex; overflow: hidden; }
+
+/* Left: Charts */
+.tl-charts-col {
+  flex: 1; 
+  display: flex; 
+  flex-direction: column; 
+  border-right: 1px solid rgba(255,255,255,0.08); 
+  background: var(--bg-low); 
+  min-width: 0; 
+}
+.tl-charts-scroll { flex: 1; overflow-y: auto; padding: 0.5rem 0; }
+.tl-chart-block { 
+  padding: 1.5rem 1.5rem 0.75rem 1.5rem; 
+  border-bottom: 1px solid rgba(255,255,255,0.05); 
+  position: relative; 
+  background: rgba(255,255,255,0.01);
+}
+.tl-chart-label { 
+  font-family: var(--font-headline); 
+  font-size: 0.65rem; 
+  font-weight: 900; 
+  color: var(--f1-red); 
+  text-transform: uppercase; 
+  letter-spacing: 0.18em; 
+  margin-bottom: 12px; 
+}
+.tl-playhead { 
+  position: absolute; 
+  top: 0; bottom: 0; 
+  width: 2px; 
+  background: #fff; 
+  box-shadow: 0 0 12px rgba(255,255,255,0.6); 
+  pointer-events: none; 
+  z-index: 15; 
+}
+
+/* Center: Large Map */
+.tl-map-col { 
+  flex: 1; display: flex; flex-direction: column; position: relative; 
+  background: radial-gradient(circle at center, #1a1a1a 0%, #0f0f0f 100%);
+  overflow: hidden; justify-content: center; align-items: center; min-width: 0;
+}
+.tl-map-container { width: 90%; height: 90%; position: relative; }
+#trackSvg { width: 100%; height: 100%; filter: drop-shadow(0 0 20px rgba(0,0,0,0.5)); }
+
+/* Right: Stats & Weather */
+.tl-stats-col { flex: 1; display: flex; flex-direction: column; border-left: 1px solid rgba(255,255,255,0.05); background: #111; overflow-y: auto; min-width: 0; }
+
+/* Weather Card */
+.tl-wcard { padding: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05); background: linear-gradient(135deg, #181818 0%, #111 100%); }
+.tl-wgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.75rem; }
+.tl-witem { display: flex; flex-direction: column; }
+.tl-w-val { font-family: var(--font-headline); font-size: 0.9rem; font-weight: 700; color: #fff; }
+.tl-w-lbl { font-size: 0.45rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em; }
+
+/* Driver Info */
+.tl-dcard { padding: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.tl-dcard-name { font-family: var(--font-headline); font-size: 1.1rem; font-weight: 900; font-style: italic; text-transform: uppercase; border-left: 4px solid var(--f1-red); padding-left: 0.75rem; }
+
+/* Live Readouts */
+.tl-live-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: rgba(255,255,255,0.05); }
+.tl-live-cell { background: #131313; padding: 1rem; display: flex; flex-direction: column; align-items: center; }
+.tl-live-val { font-family: var(--font-headline); font-size: 1.5rem; font-weight: 900; font-style: italic; line-height: 1; }
+
+/* Playback Footer */
+.tl-footer {
+  height: 70px; flex-shrink: 0; background: #0a0a0a; border-top: 3px solid var(--f1-red);
+  display: flex; align-items: center; padding: 0 1.5rem; gap: 1.5rem; z-index: 50;
+  box-shadow: 0 -10px 30px rgba(0,0,0,0.8);
+}
+.tl-scrub-container { flex: 1; height: 100%; display: flex; align-items: center; }
+.tl-scrub-track { flex: 1; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; position: relative; cursor: pointer; }
+.tl-scrub-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--f1-red); border-radius: 3px; }
+.tl-scrub-thumb { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 14px; height: 14px; background: #fff; border: 3px solid var(--f1-red); border-radius: 50%; }
+
+.tl-time-box { font-family: monospace; color: var(--f1-red); font-size: 1rem; min-width: 6rem; text-align: center; font-weight: 700; }
+.tl-btn-group { display: flex; align-items: center; gap: 1rem; }
+.tl-cbtn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.85); cursor: pointer; padding: 10px 16px; border-radius: 8px; transition: all var(--transition-fast); display: flex; align-items: center; gap: 0.6rem; font-family: var(--font-headline); font-size: 0.75rem; font-weight: 800; letter-spacing: 0.05em; }
+.tl-cbtn:hover { color: #fff; background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.35); box-shadow: 0 8px 24px rgba(0,0,0,0.5); transform: translateY(-2px); }
+.tl-cbtn .material-symbols-outlined { font-size: 1.8rem; }
+.tl-cbtn-active { color: #fff !important; border-color: var(--f1-red) !important; background: var(--f1-red) !important; box-shadow: var(--f1-red-glow); }
+
+.tl-spinner { width: 22px; height: 22px; border: 2px solid rgba(225,6,0,0.2); border-top-color: var(--f1-red); border-radius: 50%; animation: tl-spin 0.75s linear infinite; }
+@keyframes tl-spin { to { transform: rotate(360deg); } }
+
+.tl-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: rgba(255,255,255,0.15); }
+.tl-canvas { width: 100%; display: block; background: transparent; }
+.tl-chart-wrapper { position: relative; width: 100%; cursor: ew-resize; }

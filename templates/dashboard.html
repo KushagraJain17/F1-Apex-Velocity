@@ -1,0 +1,107 @@
+{% set active_page = 'home' %}
+{% extends "base.html" %}
+
+{% block title %}APEX VELOCITY{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/dashboard.css" />
+{% endblock %}
+
+{% block content %}
+<div class="page-content dashboard-main-content">
+
+  <!-- Hero Grid -->
+  <div class="dashboard-hero-grid animate-in">
+
+    <!-- Next Race Hero -->
+    {% if next_event %}
+    <div class="card next-race-card animate-in">
+      <div class="next-race-card__round-bg">{{ next_event['RoundNumber'] }}</div>
+      <div class="next-race-card__body">
+        <p class="next-race-card__label">NEXT ROUND</p>
+        <h2 class="next-race-card__title">{{ next_event['EventName'] }}</h2>
+        <div class="next-race-card__meta">
+          <div class="next-race-card__meta-item">
+            <span class="material-symbols-outlined">location_on</span>
+            <span>{{ next_event['Location'] }}, {{ next_event['Country'] }}</span>
+          </div>
+          <div class="next-race-card__meta-item">
+            <span class="material-symbols-outlined">calendar_month</span>
+            <span>{{ next_event['EventDate'] }}</span>
+          </div>
+        </div>
+        <a href="/schedule" class="next-race-card__cta">
+          VIEW FULL SCHEDULE
+          <span class="material-symbols-outlined" style="font-size:1rem;">chevron_right</span>
+        </a>
+      </div>
+    </div>
+    {% else %}
+    <div class="card season-complete-card animate-in">
+      <span class="material-symbols-outlined season-complete-card__icon">flag</span>
+      <h3 class="season-complete-card__title">SEASON COMPLETE</h3>
+      <p style="color:var(--text-muted);">Stay tuned for the 2027 season launch.</p>
+    </div>
+    {% endif %}
+
+    <!-- Championship Leaders -->
+    <div class="card leaders-card animate-in">
+      <div class="leaders-card__header">
+        <h3 class="leaders-card__title">Drivers' Championship Leaders</h3>
+        <a href="/standings" class="leaders-card__link">VIEW ALL</a>
+      </div>
+
+      <div class="leaders-card__list">
+        {% if top_drivers %}
+        {% for d in top_drivers %}
+        <div class="driver-leader-row" style="--team-color: {{ d.Color }};">
+          <div class="driver-leader-row__pos">{{ loop.index }}</div>
+          <div class="driver-leader-row__info">
+            <div class="driver-leader-row__name">{{ d.Name }}</div>
+            <div class="driver-leader-row__team">{{ d.Team }}</div>
+          </div>
+          <div class="driver-leader-row__points">
+            <div class="driver-leader-row__points-value">{{ d.Points|int }}</div>
+            <div class="driver-leader-row__points-label">PTS</div>
+          </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p class="leaders-card__empty">Awaiting season data...</p>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Quick Access Links -->
+  <div class="quick-access-grid animate-in">
+    <a href="/telemetry" class="card quick-access-card">
+      <span class="material-symbols-outlined quick-access-card__icon">monitoring</span>
+      <div>
+        <h4 class="quick-access-card__title">Advanced Telemetry</h4>
+        <p class="quick-access-card__desc">Analyze high-speed qualifying data and driver inputs.</p>
+      </div>
+    </a>
+    <a href="/archives" class="card quick-access-card">
+      <span class="material-symbols-outlined quick-access-card__icon">history</span>
+      <div>
+        <h4 class="quick-access-card__title">Historical Archives</h4>
+        <p class="quick-access-card__desc">Explore results and standings from previous seasons.</p>
+      </div>
+    </a>
+    <a href="/standings/constructors" class="card quick-access-card">
+      <span class="material-symbols-outlined quick-access-card__icon">emoji_events</span>
+      <div>
+        <h4 class="quick-access-card__title">Constructors</h4>
+        <p class="quick-access-card__desc">Team performance and championship battle tracking.</p>
+      </div>
+    </a>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/dashboard.js"></script>
+{% endblock %}

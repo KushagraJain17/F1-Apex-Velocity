@@ -1,0 +1,159 @@
+{% set active_page = 'standings' %}
+{% extends "base.html" %}
+
+{% block title %}APEX VELOCITY | Driver Standings{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/standings.css" />
+{% endblock %}
+
+{% block content %}
+<div class="page-content">
+
+  <!-- Header -->
+  <div class="page-header animate-in">
+    <div>
+      <h1 class="page-title">Driver <span style="color:var(--f1-red);">Standings</span></h1>
+      <p class="page-subtitle">Season {{ season if season else '2026' }} Live Driver Rankings</p>
+    </div>
+    <div class="standings-header-meta">
+      <div class="card standings-live-card">
+        <p class="stat-label">Last Update</p>
+        <p style="font-family:var(--font-headline);font-size:1.1rem;font-weight:700;">LIVE FEED ACTIVE</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top 3 Podium Cards -->
+  {% if drivers %}
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 podium-grid">
+
+    <!-- P1 -->
+    <div class="card col-span-12 lg:col-span-6 podium-p1" style="--team-color: {{ drivers[0].Color }};">
+      <div class="podium-p1__bg-num">01</div>
+      <span class="badge podium-p1__badge" style="background:color-mix(in srgb, var(--team-color), transparent 85%); color:var(--team-color); border:1px solid color-mix(in srgb, var(--team-color), transparent 70%);">Championship Leader</span>
+      <h2 class="podium-p1__name">{{ drivers[0].Name }}</h2>
+      <p class="podium-p1__team">{{ drivers[0].Team }}</p>
+      <div class="grid grid-cols-3 gap-6">
+        <div>
+          <p class="stat-label">Points</p>
+          <p class="podium-p1__stat-value podium-p1__stat-value--pts">{{ drivers[0].Points }}</p>
+        </div>
+        <div>
+          <p class="stat-label">Wins</p>
+          <p class="podium-p1__stat-value">{{ drivers[0].Wins }}</p>
+        </div>
+        <div>
+          <p class="stat-label">Podiums</p>
+          <p class="podium-p1__stat-value">{{ drivers[0].Podiums }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- P2 & P3 -->
+    <div class="col-span-12 lg:col-span-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+      {% if drivers|length > 1 %}
+      <div class="card podium-p2" style="--team-color: {{ drivers[1].Color }};">
+        <span class="podium-p2__bg-num">02</span>
+        <h3 class="podium-p2__name">{{ drivers[1].Name }}</h3>
+        <p class="stat-label" style="margin-bottom:1rem;">{{ drivers[1].Team }}</p>
+        <div class="podium-p2__footer">
+          <div>
+            <p class="stat-label">Points</p>
+            <p class="podium-p2__points">{{ drivers[1].Points }}</p>
+          </div>
+          {% if drivers[1].TrendVal != 0 %}
+          <div class="{{ 'trend-up' if drivers[1].TrendVal > 0 else 'trend-down' }}">
+            <span class="material-symbols-outlined" style="font-size:1rem;">{{ 'stat_1' if drivers[1].TrendVal > 0 else 'stat_minus_1' }}</span>
+            {{ drivers[1].Trend }}
+          </div>
+          {% else %}
+          <div class="trend-stable">STABLE</div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+      {% if drivers|length > 2 %}
+      <div class="card podium-p3" style="--team-color: {{ drivers[2].Color }};">
+        <span class="podium-p3__bg-num">03</span>
+        <h3 class="podium-p3__name">{{ drivers[2].Name }}</h3>
+        <p class="stat-label" style="margin-bottom:1rem;">{{ drivers[2].Team }}</p>
+        <div class="podium-p3__footer">
+          <div>
+            <p class="stat-label">Points</p>
+            <p class="podium-p3__points">{{ drivers[2].Points }}</p>
+          </div>
+          {% if drivers[2].TrendVal != 0 %}
+          <div class="{{ 'trend-up' if drivers[2].TrendVal > 0 else 'trend-down' }}">
+            <span class="material-symbols-outlined" style="font-size:1rem;">{{ 'stat_1' if drivers[2].TrendVal > 0 else 'stat_minus_1' }}</span>
+            {{ drivers[2].Trend }}
+          </div>
+          {% else %}
+          <div class="trend-stable">STABLE</div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Full Standings Table -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Full Driver Standings</h3>
+      <div style="display:flex;gap:0.5rem;">
+        <button id="btn-global" class="badge badge-red" style="cursor:pointer;">Global</button>
+        <button id="btn-team"   class="badge badge-dim" style="cursor:pointer;">By Team</button>
+      </div>
+    </div>
+    <div class="standings-table-container">
+      <table class="data-table" id="standings-table">
+        <thead>
+          <tr>
+            <th>Pos</th>
+            <th>Driver</th>
+            <th>Team</th>
+            <th class="text-center">Wins</th>
+            <th class="text-center">Podiums</th>
+            <th class="text-left">Points</th>
+            <th class="text-left">Trend</th>
+          </tr>
+        </thead>
+        <tbody id="standings-tbody">
+          {% if drivers %}
+          {% for driver in drivers %}
+          <tr class="driver-row" data-points="{{ driver.Points }}" data-team="{{ driver.Team }}" style="--team-color: {{ driver.Color }};">
+            <td class="standings-pos-cell">{{ '%02d' % driver.Pos|int if driver.Pos and driver.Pos|string != '0' else '00' }}</td>
+            <td class="standings-name-cell">{{ driver.Name }}</td>
+            <td class="stat-label">{{ driver.Team }}</td>
+            <td class="standings-wins-cell">{{ driver.Wins }}</td>
+            <td class="standings-podiums-cell">{{ driver.Podiums }}</td>
+            <td class="standings-points-cell">{{ driver.Points }}</td>
+            <td class="standings-trend-cell">
+              {% if driver.TrendVal > 0 %}
+              <span class="badge" style="background:rgba(74,222,128,0.15);color:#4ade80;">{{ driver.Trend }}</span>
+              {% elif driver.TrendVal < 0 %}
+              <span class="badge" style="background:rgba(225,6,0,0.15);color:var(--f1-red);">{{ driver.Trend }}</span>
+              {% else %}
+              <span class="badge badge-dim">{{ driver.Trend }}</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+          {% else %}
+          <tr>
+            <td colspan="7" style="text-align:center;color:var(--text-muted);padding:2rem;">No standings data available for the 2026 season yet.</td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/standings.js"></script>
+{% endblock %}

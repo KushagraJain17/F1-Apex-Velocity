@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+fastf1
+sqlalchemy
+jinja2
+pandas
+numpy
+matplotlib
+requests
+requests-cache

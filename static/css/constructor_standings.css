@@ -1,0 +1,116 @@
+/**
+ * APEX VELOCITY - Constructor Standings Page Styles
+ */
+
+/* ── Top 3 Podium Grid ───────────────────────────────────── */
+.constructor-podium-grid {
+  margin-bottom: 2rem;
+}
+
+.constructor-podium-card {
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  border-top: 4px solid var(--team-color);
+}
+
+.constructor-podium-card__bg-num {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-family: var(--font-headline);
+  font-size: 3.5rem;
+  font-weight: 900;
+  font-style: italic;
+  opacity: 0.08;
+  color: #fff;
+  pointer-events: none;
+}
+
+.constructor-podium-card__badge {
+  margin-bottom: 0.75rem;
+  display: inline-block;
+}
+
+.constructor-podium-card__name {
+  font-family: var(--font-headline);
+  font-size: 1.6rem;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  margin-bottom: 0.4rem;
+  color: var(--team-color);
+}
+
+.constructor-podium-card__drivers {
+  margin-bottom: 1.25rem;
+}
+
+.constructor-podium-card__points {
+  font-family: var(--font-headline);
+  font-size: 2.5rem;
+  font-weight: 900;
+}
+
+/* ── Full Table ──────────────────────────────────────────── */
+.constructor-table-wrap {
+  overflow-x: auto;
+}
+
+/* Table cell typography */
+.constructor-pos-cell {
+  font-family: var(--font-headline);
+  font-weight: 900;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.constructor-name-cell {
+  font-family: var(--font-headline);
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--team-color);
+}
+
+.constructor-drivers-cell {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.constructor-wins-cell {
+  width: 80px;
+  text-align: center;
+  font-family: var(--font-headline);
+  font-weight: 700;
+}
+
+.constructor-points-cell {
+  width: 100px;
+  text-align: center;
+  font-family: var(--font-headline);
+  font-weight: 900;
+  font-size: 1.3rem;
+}
+
+.constructor-trend-cell {
+  width: 100px;
+  text-align: center;
+}
+
+.constructor-progress-track {
+  margin-top: 1rem;
+}
+
+.constructor-progress-fill {
+  width: var(--fill-width, 0%);
+  background: var(--team-color);
+}
+
+.constructor-table-empty {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 2rem;
+}

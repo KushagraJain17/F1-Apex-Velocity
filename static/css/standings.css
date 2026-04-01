@@ -1,0 +1,203 @@
+/**
+ * APEX VELOCITY - Standings Page Styles
+ */
+
+/* ── Header ─────────────────────────────────────────────── */
+.standings-header-meta {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.standings-live-card {
+  padding: 0.75rem 1.25rem;
+}
+
+/* ── Podium Cards Grid ───────────────────────────────────── */
+.podium-grid {
+  margin-bottom: 2rem;
+}
+
+/* P1 Hero Card */
+.podium-p1 {
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+  border-top: 4px solid var(--team-color);
+}
+
+.podium-p1__bg-num {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-family: var(--font-headline);
+  font-size: 6rem;
+  font-weight: 900;
+  font-style: italic;
+  opacity: 0.06;
+  line-height: 1;
+  color: var(--team-color);
+  pointer-events: none;
+}
+
+.podium-p1__badge {
+  margin-bottom: 1rem;
+  display: inline-block;
+}
+
+.podium-p1__name {
+  font-family: var(--font-headline);
+  font-size: 2.6rem;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+  color: var(--team-color);
+}
+
+.podium-p1__team {
+  font-family: var(--font-headline);
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+}
+
+.podium-p1__stat-value {
+  font-family: var(--font-headline);
+  font-size: 2.2rem;
+  font-weight: 900;
+}
+
+.podium-p1__stat-value--pts {
+  color: var(--f1-red);
+}
+
+/* P2 / P3 Cards */
+.podium-p2,
+.podium-p3 {
+  padding: 1.25rem;
+  position: relative;
+  border-top: 2px solid var(--team-color);
+}
+
+.podium-p2__bg-num,
+.podium-p3__bg-num {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  font-family: var(--font-headline);
+  font-size: 2.5rem;
+  font-weight: 900;
+  font-style: italic;
+  color: color-mix(in srgb, var(--team-color), transparent 90%);
+  pointer-events: none;
+}
+
+.podium-p2__name,
+.podium-p3__name {
+  font-family: var(--font-headline);
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  margin-bottom: 0.2rem;
+  color: var(--team-color);
+}
+
+.podium-p2__points,
+.podium-p3__points {
+  font-family: var(--font-headline);
+  font-size: 1.8rem;
+  font-weight: 900;
+}
+
+.podium-p2__footer,
+.podium-p3__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+/* ── Trend Badge ─────────────────────────────────────────── */
+.trend-up {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #4ade80;
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: var(--font-headline);
+}
+
+.trend-down {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--f1-red);
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: var(--font-headline);
+}
+
+.trend-stable {
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: var(--font-headline);
+  color: var(--text-muted);
+}
+
+/* ── Full Standings Table ────────────────────────────────── */
+.standings-table-container {
+  overflow-x: auto;
+}
+
+/* Table cell typography */
+.standings-pos-cell {
+  width: 60px;
+  font-family: var(--font-headline);
+  font-weight: 900;
+  font-style: italic;
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.1);
+  line-height: 1;
+}
+
+.standings-name-cell {
+  font-family: var(--font-headline);
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: var(--team-color);
+}
+
+.standings-wins-cell {
+  width: 50px;
+  text-align: center;
+  font-family: var(--font-headline);
+  font-weight: 700;
+}
+
+.standings-podiums-cell {
+  width: 90px;
+  text-align: center;
+  font-family: var(--font-headline);
+  font-weight: 700;
+}
+
+.standings-points-cell {
+  width: 100px;
+  text-align: left;
+  font-family: var(--font-headline);
+  font-size: 1.4rem;
+  font-weight: 900;
+}
+
+.standings-trend-cell {
+  width: 120px;
+  text-align: left;
+}

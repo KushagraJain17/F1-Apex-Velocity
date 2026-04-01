@@ -1,0 +1,94 @@
+{% set active_page = 'constructors' %}
+{% extends "base.html" %}
+
+{% block title %}APEX VELOCITY | Constructor Standings{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/constructor_standings.css" />
+{% endblock %}
+
+{% block content %}
+<div class="page-content">
+
+  <div class="page-header animate-in">
+    <div>
+      <h1 class="page-title">CONSTRUCTOR <span style="color:var(--f1-red);">STANDINGS</span></h1>
+      <p class="page-subtitle">{{ season if season else '2026' }} Season // Team Championship Rankings</p>
+    </div>
+  </div>
+
+  <!-- Top 3 Constructor Podium -->
+  {% if teams %}
+  {% set maxpts = teams[0].Points if teams[0].Points > 0 else 1 %}
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 constructor-podium-grid">
+    {% for team in teams[:3] %}
+    {% set accent_color = team.Color if team.Color else 'var(--f1-red)' %}
+    <div class="card constructor-podium-card" style="--team-color: {{ accent_color }};">
+      <div class="constructor-podium-card__bg-num">0{{ loop.index }}</div>
+      <span class="badge constructor-podium-card__badge" style="background:color-mix(in srgb, var(--team-color), transparent 85%); color:var(--team-color); border:1px solid color-mix(in srgb, var(--team-color), transparent 70%);">P{{ loop.index }}</span>
+      <h2 class="constructor-podium-card__name">{{ team.TeamName }}</h2>
+      <p class="stat-label constructor-podium-card__drivers">{{ team.Drivers | join(' · ') }}</p>
+      <p class="constructor-podium-card__points">{{ '%0.0f' | format(team.Points) }}</p>
+      <p class="stat-label">Championship Points</p>
+      <div class="progress-track" style="margin-top:1rem;">
+        {% set fill_width = (team.Points / maxpts * 100)|int %}
+        <div class="progress-fill" style="--fill-width: {{ fill_width }}%; width:var(--fill-width); background:var(--team-color);"></div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Full Constructor Table -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">All Constructors</h3>
+      <span class="badge badge-live">Live</span>
+    </div>
+    <div class="constructor-table-wrap">
+      <table class="data-table">
+        <thead><tr>
+          <th>Pos</th><th>Team</th><th>Drivers</th>
+          <th class="text-center">Wins</th>
+          <th class="text-center">Points</th>
+          <th class="text-center">Change</th>
+        </tr></thead>
+        <tbody>
+          {% for item in teams %}
+          {% set row_color = item.Color if item.Color else 'transparent' %}
+          <tr style="--team-color: {{ row_color }};">
+            <td class="constructor-pos-cell">{{ '%02d' % loop.index }}</td>
+            <td class="constructor-name-cell">{{ item.TeamName }}</td>
+            <td>
+              <div class="constructor-drivers-cell">
+                {% for d in item.Drivers %}
+                <span class="badge badge-dim">{{ d }}</span>
+                {% endfor %}
+              </div>
+            </td>
+            <td class="constructor-wins-cell">{{ item.Wins }}</td>
+            <td class="constructor-points-cell">{{ '%0.0f'|format(item.Points) }}</td>
+            <td class="constructor-trend-cell">
+              {% if item.TrendVal > 0 %}
+                <span class="badge" style="background:rgba(74,222,128,0.15);color:#4ade80;">{{ item.Trend }}</span>
+              {% elif item.TrendVal < 0 %}
+                <span class="badge" style="background:rgba(225,6,0,0.15);color:var(--f1-red);">{{ item.Trend }}</span>
+              {% else %}
+                <span class="badge badge-dim">{{ item.Trend if item.Trend else 'STABLE' }}</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:2rem;">No data available</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/constructor.js"></script>
+{% endblock %}

@@ -1,0 +1,305 @@
+{% set active_page = 'telemetry' %} {% extends "base.html" %} {% block title
+%}APEX VELOCITY | Qualifying Telemetry{% endblock %} {% block head %}
+<link rel="stylesheet" href="/static/css/telemetry.css" />
+{% endblock %} {% block content %}
+<script type="application/json" id="years-data">
+  {{ years | tojson }}
+</script>
+
+<!-- Markup fragments used by telemetry.js (avoid HTML strings in JS) -->
+<template id="tl-tmpl-opt-loading"
+  ><option value="">— Loading —</option></template
+>
+<template id="tl-tmpl-opt-select"
+  ><option value="">— Select —</option></template
+>
+<template id="tl-tmpl-driver-row">
+  <div class="tl-drow">
+    <span class="tl-drow-pos"></span>
+    <span class="tl-drow-abbr"></span>
+    <span class="tl-drow-t"></span>
+  </div>
+</template>
+<template id="tl-tmpl-driver-card">
+  <div style="margin-bottom: 1rem">
+    <div class="tl-dcard-name"></div>
+    <div
+      class="tl-dcard-time"
+      style="
+        font-family: monospace;
+        font-size: 1.1rem;
+        font-weight: 900;
+        color: #fff;
+        margin-top: 0.4rem;
+      "
+    ></div>
+    <div
+      class="tl-dcard-team"
+      style="
+        font-size: 0.55rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-top: 2px;
+      "
+    ></div>
+  </div>
+</template>
+<template id="tl-tmpl-charts-empty-prompt"
+  ><div class="tl-empty">Select a race & driver</div></template
+>
+<template id="tl-tmpl-charts-empty-error">
+  <div class="tl-empty" style="padding: 2rem">
+    <span class="tl-empty-msg"></span>
+  </div>
+</template>
+
+<div class="tl-shell">
+  <!-- Sidebar -->
+  <aside class="tl-sidebar">
+    <div class="tl-sidebar-hd">
+      <div class="tl-sidebar-title">Qualifying</div>
+      <div class="tl-sidebar-sub">Select driver to inspect lap</div>
+    </div>
+    <div class="tl-driver-list nice-scroll" id="driverList">
+      <div class="tl-empty" style="padding: 2rem 1rem">
+        <span
+          class="material-symbols-outlined"
+          style="font-size: 2rem; opacity: 0.2"
+          >group</span
+        >
+        <div class="tl-lbl" style="margin-top: 1rem">Select a race</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="tl-main">
+    <!-- Top Nav -->
+    <div class="tl-topbar">
+      <div style="display: flex; align-items: center; gap: 0.4rem">
+        <span class="tl-lbl">Year</span>
+        <select class="tl-select" id="yearSelect">
+          {% for y in years %}
+          <option value="{{ y }}">{{ y }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.4rem">
+        <span class="tl-lbl">Round</span>
+        <select class="tl-select" id="roundSelect" style="min-width: 140px">
+          <option value="">— Select —</option>
+        </select>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.4rem">
+        <span class="tl-lbl">Driver</span>
+        <select class="tl-select" id="driverSelect" disabled>
+          <option value="">— Select —</option>
+        </select>
+      </div>
+      <div class="tl-event-name" id="eventLabel">NO SESSION LOADED</div>
+      <div id="topSpinner" style="display: none">
+        <div class="tl-spinner"></div>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="tl-body">
+      <!-- Left: Charts -->
+      <div class="tl-charts-col">
+        <div class="tl-charts-scroll nice-scroll" id="chartsScroll">
+          <div class="tl-empty" style="margin-top: 40%">
+            <span
+              class="material-symbols-outlined"
+              style="font-size: 2.5rem; opacity: 0.2"
+              >query_stats</span
+            >
+            <div class="tl-lbl" style="margin-top: 1rem">Telemetry Data</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center: Track Map -->
+      <div class="tl-map-col" id="mapCol">
+        <div class="tl-map-container">
+          <svg
+            id="trackSvg"
+            viewBox="0 0 500 500"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <polyline
+              id="trackLine"
+              points=""
+              fill="none"
+              stroke="rgba(255,255,255,0.05)"
+              stroke-width="8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <g id="trackHeatmap"></g>
+            <g id="trackCorners"></g>
+
+            <!-- Primary Driver -->
+            <circle
+              id="driverDot"
+              cx="-999"
+              cy="-999"
+              r="9"
+              fill="var(--f1-red)"
+              stroke="#fff"
+              stroke-width="2.5"
+            />
+            <text
+              id="driverDotLbl"
+              x="-999"
+              y="-999"
+              font-size="10"
+              fill="#fff"
+              font-family="monospace"
+              text-anchor="middle"
+              dy="-14"
+              font-weight="bold"
+            ></text>
+          </svg>
+        </div>
+        <div
+          style="
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            font-family: var(--font-headline);
+            font-size: 0.5rem;
+            color: rgba(255, 255, 255, 0.2);
+            letter-spacing: 0.2em;
+          "
+        >
+          DYNAMIC TRACK TRACE
+        </div>
+      </div>
+
+      <!-- Right: Stats & Weather -->
+      <div class="tl-stats-col" id="statsCol" style="display: none">
+        <!-- Weather -->
+        <div class="tl-wcard" id="weatherCard">
+          <div class="tl-lbl" style="color: var(--f1-red)">
+            Weather Conditions
+          </div>
+          <div class="tl-wgrid">
+            <div class="tl-witem">
+              <span class="tl-w-val" id="wAir">—</span
+              ><span class="tl-w-lbl">Air Temp</span>
+            </div>
+            <div class="tl-witem">
+              <span class="tl-w-val" id="wTrack">—</span
+              ><span class="tl-w-lbl">Track Temp</span>
+            </div>
+            <div class="tl-witem">
+              <span class="tl-w-val" id="wHum">—</span
+              ><span class="tl-w-lbl">Humidity</span>
+            </div>
+            <div class="tl-witem">
+              <span class="tl-w-val" id="wWind">—</span
+              ><span class="tl-w-lbl">Wind</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Driver Card -->
+        <div class="tl-dcard" id="driverCard"></div>
+
+        <!-- Live Readouts -->
+        <div class="tl-live-grid">
+          <div class="tl-live-cell">
+            <div class="tl-lbl">Speed</div>
+            <div class="tl-live-val" id="liveSpeed">—</div>
+            <div
+              style="
+                font-size: 0.4rem;
+                color: var(--text-muted);
+                margin-top: 2px;
+              "
+            >
+              KM/H
+            </div>
+          </div>
+          <div class="tl-live-cell">
+            <div class="tl-lbl">Gear</div>
+            <div class="tl-live-val" id="liveGear">—</div>
+          </div>
+          <div class="tl-live-cell">
+            <div class="tl-lbl">Throttle</div>
+            <div class="tl-live-val" id="liveThrottle" style="color: #2ef550">
+              —
+            </div>
+          </div>
+          <div class="tl-live-cell">
+            <div class="tl-lbl">Brake</div>
+            <div
+              class="tl-live-val"
+              id="liveBrake"
+              style="color: var(--f1-red)"
+            >
+              OFF
+            </div>
+          </div>
+        </div>
+
+        <div style="padding: 1rem">
+          <div class="tl-lbl" style="margin-bottom: 0.5rem">DRS Status</div>
+          <div
+            id="liveDrs"
+            class="badge badge-dim"
+            style="width: 100%; text-align: center; padding: 0.5rem"
+          >
+            OFF
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Playback Footer -->
+    <div class="tl-footer" id="playbackBar" style="display: none">
+      <div class="tl-btn-group">
+        <button class="tl-cbtn" id="btnRewind" title="Restart">
+          <span class="material-symbols-outlined">restart_alt</span> RESTART
+        </button>
+        <button
+          class="tl-cbtn tl-cbtn-active"
+          id="btnPlay"
+          title="Play / Pause"
+        >
+          <span class="material-symbols-outlined" id="playIcon"
+            >play_circle</span
+          >
+          <span id="playText">PLAY</span>
+        </button>
+        <button class="tl-cbtn" id="btnFF" title="Fast Forward (2x)">
+          <span class="material-symbols-outlined">fast_forward</span> SPEED+
+        </button>
+      </div>
+
+      <div class="tl-scrub-container">
+        <div class="tl-scrub-track" id="scrubTrack">
+          <div class="tl-scrub-fill" id="scrubFill" style="width: 0%"></div>
+          <div class="tl-scrub-thumb" id="scrubThumb" style="left: 0%"></div>
+        </div>
+      </div>
+
+      <div class="tl-time-box" id="timeDisplay">0:00.000</div>
+
+      <div style="display: flex; align-items: center; gap: 0.5rem">
+        <span class="tl-lbl">Speed</span>
+        <select class="tl-select" id="speedSel" style="min-width: 60px">
+          <option value="0.5">0.5x</option>
+          <option value="1" selected>1x</option>
+          <option value="2">2x</option>
+          <option value="4">4x</option>
+          <option value="8">8x</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script src="/static/js/telemetry.js"></script>
+{% endblock %}

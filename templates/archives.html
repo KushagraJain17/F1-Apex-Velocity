@@ -1,0 +1,194 @@
+{% set active_page = 'archives' %}
+{% extends "base.html" %}
+
+{% block title %}APEX VELOCITY | Archives{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="/static/css/archives.css">
+{% endblock %}
+
+{% block content %}
+<div class="page-content">
+
+    <!-- Header & Selectors -->
+    <div class="page-header animate-in" style="position:relative; z-index:10000;">
+        <div>
+            <h1 class="page-title">F1 <span class="f1-red-text">Archives</span></h1>
+            <p class="page-subtitle">Historical Results & Standings Explorer</p>
+        </div>
+
+        <!-- Selectors -->
+        <div class="archives-header-actions">
+            <form action="/archives" method="get" id="archives-form" class="archives-form">
+                <input type="hidden" name="year" id="input-year" value="{{ year }}">
+                <input type="hidden" name="round" id="input-round" value="{{ round }}">
+                <input type="hidden" name="view" value="{{ view }}">
+
+                <!-- Year Card -->
+                <div class="card selector-card">
+                    <span class="material-symbols-outlined selector-icon">calendar_today</span>
+                    <div class="archives-dropdown" data-input="input-year">
+                        <div class="archives-trigger">{{ year }}</div>
+                        <div class="archives-menu">
+                            {% for y in years %}
+                            <div class="archives-item {% if y == year %}selected{% endif %}" data-value="{{ y }}">{{ y }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Round Card -->
+                <div class="card selector-card">
+                    <span class="material-symbols-outlined selector-icon">flag</span>
+                    <div class="archives-dropdown" data-input="input-round">
+                        <div class="archives-trigger">
+                            {% if round == 'final' %}SEASON FINAL{% else %}ROUND {{ round }}{% endif %}
+                        </div>
+                        <div class="archives-menu">
+                            <div class="archives-item {% if round == 'final' %}selected{% endif %}" data-value="final">SEASON FINAL</div>
+                            {% for event in schedule %}
+                            <div class="archives-item {% if round|string == event.RoundNumber|string %}selected{% endif %}" data-value="{{ event.RoundNumber }}">
+                                ROUND {{ event.RoundNumber }}: {{ event.EventName|upper }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- View Toggles -->
+    <div class="view-toggles-container">
+        <a href="/archives?year={{ year }}&round={{ round }}&view=drivers"
+            class="badge view-toggle-badge {% if view == 'drivers' %}badge-red{% else %}badge-dim{% endif %}">DRIVER STANDINGS</a>
+        <a href="/archives?year={{ year }}&round={{ round }}&view=constructors"
+            class="badge view-toggle-badge {% if view == 'constructors' %}badge-red{% else %}badge-dim{% endif %}">CONSTRUCTOR STANDINGS</a>
+        
+        {% if round != 'final' %}
+            <a href="/archives?year={{ year }}&round={{ round }}&view=race"
+                class="badge view-toggle-badge {% if view == 'race' %}badge-red{% else %}badge-dim{% endif %}">RACE RESULT</a>
+            
+            {% if is_sprint %}
+                <a href="/archives?year={{ year }}&round={{ round }}&view=sprint_race"
+                    class="badge view-toggle-badge {% if view == 'sprint_race' %}badge-red{% else %}badge-dim{% endif %}">SPRINT RACE</a>
+                {% if year >= 2023 %}
+                <a href="/archives?year={{ year }}&round={{ round }}&view=sprint_qualifying"
+                    class="badge view-toggle-badge {% if view == 'sprint_qualifying' %}badge-red{% else %}badge-dim{% endif %}">
+                    {% if year == 2023 %}SPRINT SHOOTOUT{% else %}SPRINT QUALIFYING{% endif %}
+                </a>
+                {% endif %}
+            {% endif %}
+
+            <a href="/archives?year={{ year }}&round={{ round }}&view=qualifying"
+                class="badge view-toggle-badge {% if view == 'qualifying' %}badge-red{% else %}badge-dim{% endif %}">QUALIFYING</a>
+        {% endif %}
+    </div>
+
+    <!-- Data Display -->
+    <div class="card animate-in" style="animation-delay:0.1s;">
+        <div class="card-header">
+            <h3 class="card-title">
+                {% if view == 'drivers' %}Driver Standings
+                {% elif view == 'constructors' %}Constructor Standings
+                {% elif view == 'race' %}Race Classification
+                {% elif view == 'sprint_race' %}Sprint Race Classification
+                {% elif view == 'sprint_qualifying' %}{% if year == 2023 %}Sprint Shootout Classification{% else %}Sprint Qualifying Classification{% endif %}
+                {% elif view == 'qualifying' %}Qualifying Classification
+                {% endif %}
+                — {{ year }}
+            </h3>
+        </div>
+
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        {% if view == 'drivers' %}
+                        <th class="col-pos">Pos</th>
+                        <th class="col-name">Driver</th>
+                        <th class="col-team">Team</th>
+                        <th style="text-align:center;" class="col-wins">Wins</th>
+                        <th style="text-align:right;" class="col-pts">Points</th>
+                        {% elif view == 'constructors' %}
+                        <th class="col-pos">Pos</th>
+                        <th class="col-name">Team</th>
+                        <th style="text-align:center;" class="col-wins">Wins</th>
+                        <th style="text-align:right;" class="col-pts">Points</th>
+                        {% elif view in ['race', 'sprint_race'] %}
+                        <th class="col-pos">Pos</th>
+                        <th class="col-name">Driver</th>
+                        <th class="col-team">Team</th>
+                        <th style="text-align:center;" class="col-wins">Points</th>
+                        {% if view == 'race' %}
+                        <th style="text-align:right;" class="col-pts">Gap/Status</th>
+                        {% endif %}
+                        {% elif view in ['qualifying', 'sprint_qualifying'] %}
+                        <th class="col-pos">Pos</th>
+                        <th class="col-name">Driver</th>
+                        <th class="col-team">Team</th>
+                        <th style="text-align:center;" class="col-wins">Best Lap</th>
+                        {% if view == 'qualifying' %}
+                        <th style="text-align:right;" class="col-pts">Gap to P1</th>
+                        {% endif %}
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if data %}
+                    {% for item in data %}
+                    {% set row_color = item.Color if item.Color else 'transparent' %}
+                    <tr style="--team-color: {{ row_color }};">
+                        {% if view == 'drivers' %}
+                        <td class="pos-col">{{ '%02d' % item.Pos|int if item.Pos else '00' }}</td>
+                        <td class="name-col">{{ item.Name }}</td>
+                        <td class="stat-label">{{ item.Team }}</td>
+                        <td style="text-align:center;" class="stat-val">{{ item.Wins }}</td>
+                        <td style="text-align:right;" class="points-val">{{ item.Points }}</td>
+
+                        {% elif view == 'constructors' %}
+                        <td class="pos-col">{{ '%02d' % loop.index }}</td>
+                        <td class="name-col">{{ item.TeamName }}</td>
+                        <td style="text-align:center;" class="stat-val">{{ item.Wins }}</td>
+                        <td style="text-align:right;" class="points-val">{{ item.Points }}</td>
+
+                        {% elif view in ['race', 'sprint_race'] %}
+                        <td class="pos-col">{{ '%02d' % item.Position|int if item.Position else '00' }}</td>
+                        <td class="name-col">{{ item.Driver }}</td>
+                        <td class="stat-label">{{ item.Team }}</td>
+                        <td style="text-align:center;" class="stat-val">{{ item.Points }}</td>
+                        {% if view == 'race' %}
+                        <td style="text-align:right;" class="time-val">{{ item.Time }}</td>
+                        {% endif %}
+
+                        {% elif view in ['qualifying', 'sprint_qualifying'] %}
+                        <td class="qual-pos-col">{{ '%02d' % item.Position|int }}</td>
+                        <td class="name-col">{{ item.Driver }}</td>
+                        <td class="stat-label">{{ item.Team }}</td>
+                        <td style="text-align:center;" class="best-lap-val">{{ item.Best }}</td>
+                        {% if view == 'qualifying' %}
+                        <td style="text-align:right;" class="time-val">{{ item.Time }}</td>
+                        {% endif %}
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            <span class="material-symbols-outlined empty-state-icon">database_off</span>
+                            No historical data found for this selection.<br>
+                            <span class="empty-state-sub">Ensure the data ingestion script has completed for the year {{ year }}.</span>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/archives.js"></script>
+{% endblock %}
