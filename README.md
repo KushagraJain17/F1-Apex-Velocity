@@ -1,5 +1,7 @@
 # 🏎️ Apex Velocity - F1 Dashboard & Telemetry Explorer
 
+[![Live Demo](https://img.shields.io/badge/demo-live-green)](https://f1-apex-velocity.onrender.com/)
+
 **Apex Velocity** is a modern, FastAPI-powered web application that provides a comprehensive dashboard for Formula 1 fans. It features everything from the latest 2026 season schedule to a huge historical archive (2018-2025) and advanced telemetry visualization.
 
 ![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
