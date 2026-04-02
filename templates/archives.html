@@ -86,19 +86,8 @@
     </div>
 
     <!-- Data Display -->
-    <div class="card animate-in" style="animation-delay:0.1s;">
-        <div class="card-header">
-            <h3 class="card-title">
-                {% if view == 'drivers' %}Driver Standings
-                {% elif view == 'constructors' %}Constructor Standings
-                {% elif view == 'race' %}Race Classification
-                {% elif view == 'sprint_race' %}Sprint Race Classification
-                {% elif view == 'sprint_qualifying' %}{% if year == 2023 %}Sprint Shootout Classification{% else %}Sprint Qualifying Classification{% endif %}
-                {% elif view == 'qualifying' %}Qualifying Classification
-                {% endif %}
-                — {{ year }}
-            </h3>
-        </div>
+    <div class="constructor-classification animate-in" style="animation-delay:0.1s;">
+
 
         <div class="table-container">
             <table class="data-table">
@@ -106,27 +95,27 @@
                     <tr>
                         {% if view == 'drivers' %}
                         <th class="col-pos">Pos</th>
-                        <th class="col-name">Driver</th>
-                        <th class="col-team">Team</th>
+                        <th class="col-name text-left">Driver</th>
+                        <th class="col-team text-left">Team</th>
                         <th style="text-align:center;" class="col-wins">Wins</th>
                         <th style="text-align:right;" class="col-pts">Points</th>
                         {% elif view == 'constructors' %}
                         <th class="col-pos">Pos</th>
-                        <th class="col-name">Team</th>
+                        <th class="col-name text-left">Team</th>
                         <th style="text-align:center;" class="col-wins">Wins</th>
                         <th style="text-align:right;" class="col-pts">Points</th>
                         {% elif view in ['race', 'sprint_race'] %}
                         <th class="col-pos">Pos</th>
-                        <th class="col-name">Driver</th>
-                        <th class="col-team">Team</th>
+                        <th class="col-name text-left">Driver</th>
+                        <th class="col-team text-left">Team</th>
                         <th style="text-align:center;" class="col-wins">Points</th>
                         {% if view == 'race' %}
                         <th style="text-align:right;" class="col-pts">Gap/Status</th>
                         {% endif %}
                         {% elif view in ['qualifying', 'sprint_qualifying'] %}
                         <th class="col-pos">Pos</th>
-                        <th class="col-name">Driver</th>
-                        <th class="col-team">Team</th>
+                        <th class="col-name text-left">Driver</th>
+                        <th class="col-team text-left">Team</th>
                         <th style="text-align:center;" class="col-wins">Best Lap</th>
                         {% if view == 'qualifying' %}
                         <th style="text-align:right;" class="col-pts">Gap to P1</th>
@@ -137,34 +126,34 @@
                 <tbody>
                     {% if data %}
                     {% for item in data %}
-                    {% set row_color = item.Color if item.Color else 'transparent' %}
-                    <tr style="--team-color: {{ row_color }};">
+                    {% set row_color = item.Color if item.Color else 'var(--f1-red)' %}
+                    <tr class="archive-row" style="--team-color: {{ row_color }};">
                         {% if view == 'drivers' %}
                         <td class="pos-col">{{ '%02d' % item.Pos|int if item.Pos else '00' }}</td>
-                        <td class="name-col">{{ item.Name }}</td>
-                        <td class="stat-label">{{ item.Team }}</td>
+                        <td class="name-col text-left">{{ item.Name }}</td>
+                        <td class="stat-label text-left">{{ item.Team }}</td>
                         <td style="text-align:center;" class="stat-val">{{ item.Wins }}</td>
                         <td style="text-align:right;" class="points-val">{{ item.Points }}</td>
 
                         {% elif view == 'constructors' %}
                         <td class="pos-col">{{ '%02d' % loop.index }}</td>
-                        <td class="name-col">{{ item.TeamName }}</td>
+                        <td class="name-col text-left">{{ item.TeamName }}</td>
                         <td style="text-align:center;" class="stat-val">{{ item.Wins }}</td>
                         <td style="text-align:right;" class="points-val">{{ item.Points }}</td>
 
                         {% elif view in ['race', 'sprint_race'] %}
                         <td class="pos-col">{{ '%02d' % item.Position|int if item.Position else '00' }}</td>
-                        <td class="name-col">{{ item.Driver }}</td>
-                        <td class="stat-label">{{ item.Team }}</td>
+                        <td class="name-col text-left">{{ item.Driver }}</td>
+                        <td class="stat-label text-left">{{ item.Team }}</td>
                         <td style="text-align:center;" class="stat-val">{{ item.Points }}</td>
                         {% if view == 'race' %}
                         <td style="text-align:right;" class="time-val">{{ item.Time }}</td>
                         {% endif %}
 
                         {% elif view in ['qualifying', 'sprint_qualifying'] %}
-                        <td class="qual-pos-col">{{ '%02d' % item.Position|int }}</td>
-                        <td class="name-col">{{ item.Driver }}</td>
-                        <td class="stat-label">{{ item.Team }}</td>
+                        <td class="pos-col">{{ '%02d' % item.Position|int if item.Position else '00' }}</td>
+                        <td class="name-col text-left">{{ item.Driver }}</td>
+                        <td class="stat-label text-left">{{ item.Team }}</td>
                         <td style="text-align:center;" class="best-lap-val">{{ item.Best }}</td>
                         {% if view == 'qualifying' %}
                         <td style="text-align:right;" class="time-val">{{ item.Time }}</td>
@@ -174,10 +163,12 @@
                     {% endfor %}
                     {% else %}
                     <tr>
-                        <td colspan="5" class="empty-state">
-                            <span class="material-symbols-outlined empty-state-icon">database_off</span>
-                            No historical data found for this selection.<br>
-                            <span class="empty-state-sub">Ensure the data ingestion script has completed for the year {{ year }}.</span>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <span class="material-symbols-outlined empty-state-icon">database_off</span>
+                                No historical data found for this selection.<br>
+                                <span class="empty-state-sub">Ensure the data ingestion script has completed for the year {{ year }}.</span>
+                            </div>
                         </td>
                     </tr>
                     {% endif %}

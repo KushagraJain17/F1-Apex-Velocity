@@ -11,6 +11,8 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   position: relative;
   overflow: hidden;
+  border-radius: 16px;
+  margin-bottom: 2rem;
 }
 
 .hero-subtitle {
@@ -36,10 +38,8 @@
 /* ── Progress & Countdown ─────────────────────────────── */
 
 .championship-progress {
-  background: rgba(0, 0, 0, 0.35);
-  padding: 0.75rem 1.25rem;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: transparent;
+  padding: 0.75rem 0;
   min-width: 14rem;
 }
 
@@ -120,6 +120,8 @@
   position: relative;
   z-index: 1;
   border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  overflow: hidden;
 }
 
 .event-card.expanded {
@@ -206,7 +208,7 @@
   padding: 0.25rem 0.6rem;
   font-size: 0.55rem;
   font-weight: 700;
-  border-radius: 2px;
+  border-radius: 100px;
 }
 
 .status-badge.completed {
@@ -239,6 +241,7 @@
   overflow: hidden;
   margin-bottom: 1.25rem;
   border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
 }
 
 .circuit-image {
@@ -286,6 +289,7 @@
   padding: 0.75rem 1rem;
   background: rgba(255, 255, 255, 0.03);
   border-left: 3px solid var(--f1-red);
+  border-radius: 0 8px 8px 0;
 }
 
 .date-ribbon .material-symbols-outlined {
@@ -305,6 +309,7 @@
   background: rgba(0, 0, 0, 0.2);
   padding: 1.25rem;
   border: 1px solid rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
 }
 
 .session-schedule-header {
@@ -381,7 +386,8 @@
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
-  height: 320px;
+  height: 550px;
+  border-radius: 12px;
 }
 
 .result-panel-title {
@@ -415,8 +421,9 @@
   align-items: center;
   padding: 0.65rem 0.75rem;
   background: rgba(255, 255, 255, 0.03);
-  margin-bottom: 1px;
+  margin-bottom: 2px;
   transition: all 0.2s ease;
+  border-radius: 6px;
 }
 
 .result-driver-info {

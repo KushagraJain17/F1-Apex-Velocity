@@ -27,6 +27,74 @@ const initialEvents = JSON.parse(document.getElementById('schedule-data').textCo
 
 function pad(n) { return n < 10 ? '0' + n : n; }
 
+/* ── Result Panel (Shared UI) ────────────────────────── */
+const ResultPanel = React.memo(({ title, data, isQuali, loading }) => {
+  return (
+    <div style={{
+      background: 'rgba(255,255,255,0.02)',
+      border: '1px solid rgba(255,255,255,0.05)',
+      padding: '1.25rem',
+      display: 'flex',
+      flexDirection: 'column',
+      height: 550,
+      borderRadius: '12px'
+    }}>
+      <h3 style={{
+        fontFamily: 'var(--font-headline)',
+        color: 'var(--f1-red)',
+        fontSize: '0.7rem',
+        letterSpacing: '0.15em',
+        fontWeight: 900,
+        textTransform: 'uppercase',
+        marginBottom: '1rem',
+        paddingBottom: '0.5rem',
+        borderBottom: '2px solid var(--f1-red)',
+        width: 'fit-content'
+      }}>
+        {title}
+      </h3>
+      {loading && <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem', padding: '1rem', textAlign: 'center' }}>Synchronizing data...</div>}
+      {!loading && data && data.length === 0 && <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.7rem', textAlign: 'center', padding: '1rem' }}>Data not yet available</div>}
+      {!loading && data && data.length > 0 && (
+        <div style={{ flex: 1, overflowY: 'auto' }} className="nice-scroll space-y-px">
+          {data.map((row, i) => (
+            <div key={i} style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '0.65rem 0.75rem',
+              background: 'rgba(255,255,255,0.03)',
+              marginBottom: '2px',
+              transition: 'all 0.2s ease',
+              borderRadius: '6px'
+            }}>
+               <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', overflow: 'hidden', flex: 1 }}>
+                <span style={{ color: i < 3 ? (row.Color || 'var(--f1-red)') : 'rgba(255,255,255,0.4)', fontSize: '0.7rem', fontWeight: 900, minWidth: '1.2rem' }}>{row.Position}</span>
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontWeight: 800, fontSize: '0.85rem', color: row.Color || '#fff', textTransform: 'uppercase', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{row.Driver}</span>
+                  <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>{row.Team}</span>
+                </div>
+              </div>
+              <div style={{ textAlign: 'right', minWidth: '4.5rem' }}>
+                <div style={{
+                  fontFamily: 'monospace',
+                  fontSize: '0.85rem',
+                  color: i === 0 ? 'var(--f1-red)' : '#fff',
+                  fontWeight: i === 0 ? 900 : 500,
+                  letterSpacing: '-0.02em'
+                }}>
+                    { (title.toLowerCase().includes('sprint') && (!row.Time || row.Time === '-' || row.Time === '–')) ? '' : (row.Time || '–') }
+                </div>
+                {row.Points > 0 && <div style={{ fontSize: '0.6rem', color: 'var(--f1-red)', fontWeight: 900, marginTop: '-2px' }}>+{row.Points} PTS</div>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+});
+
 /* ── Event Card ─────────────────────────────────────────── */
 function EventCard({ event, expanded, onClick }) {
   const [qualifying,  setQualifying]  = React.useState(null);
@@ -64,71 +132,6 @@ function EventCard({ event, expanded, onClick }) {
     }
   }, [expanded, isPast]);
 
-  function ResultPanel({ title, data, isQuali }) {
-    return (
-      <div style={{
-        background: 'rgba(255,255,255,0.02)',
-        border: '1px solid rgba(255,255,255,0.05)',
-        padding: '1.25rem',
-        display: 'flex',
-        flexDirection: 'column',
-        height: 320
-      }}>
-        <h3 style={{
-          fontFamily: 'var(--font-headline)',
-          color: 'var(--f1-red)',
-          fontSize: '0.7rem',
-          letterSpacing: '0.15em',
-          fontWeight: 900,
-          textTransform: 'uppercase',
-          marginBottom: '1rem',
-          paddingBottom: '0.5rem',
-          borderBottom: '2px solid var(--f1-red)',
-          width: 'fit-content'
-        }}>
-          {title}
-        </h3>
-        {loading && <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem', padding: '1rem', textAlign: 'center' }}>Synchronizing data...</div>}
-        {!loading && data && data.length === 0 && <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: '0.7rem', textAlign: 'center', padding: '1rem' }}>Data not yet available</div>}
-        {!loading && data && data.length > 0 && (
-          <div style={{ maxHeight: '450px', overflowY: 'auto' }} className="nice-scroll space-y-px">
-            {data.map((row, i) => (
-              <div key={i} style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '0.65rem 0.75rem',
-                background: 'rgba(255,255,255,0.03)',
-                marginBottom: '1px',
-                transition: 'all 0.2s ease'
-              }}>
-                 <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', overflow: 'hidden', flex: 1 }}>
-                  <span style={{ color: i < 3 ? (row.Color || 'var(--f1-red)') : 'rgba(255,255,255,0.4)', fontSize: '0.7rem', fontWeight: 900, minWidth: '1.2rem' }}>{row.Position}</span>
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontWeight: 800, fontSize: '0.85rem', color: row.Color || '#fff', textTransform: 'uppercase', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>{row.Driver}</span>
-                    <span style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)', fontWeight: 600 }}>{row.Team}</span>
-                  </div>
-                </div>
-                <div style={{ textAlign: 'right', minWidth: '4.5rem' }}>
-                  <div style={{
-                    fontFamily: 'monospace',
-                    fontSize: '0.85rem',
-                    color: i === 0 ? 'var(--f1-red)' : '#fff',
-                    fontWeight: i === 0 ? 900 : 500,
-                    letterSpacing: '-0.02em'
-                  }}>
-                    {row.Time || '–'}
-                  </div>
-                  {row.Points > 0 && <div style={{ fontSize: '0.6rem', color: 'var(--f1-red)', fontWeight: 900, marginTop: '-2px' }}>+{row.Points} PTS</div>}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  }
-
   return (
     <div style={{
       border: `1px solid ${expanded ? 'rgba(225,6,0,0.5)' : 'rgba(255,255,255,0.05)'}`,
@@ -137,7 +140,9 @@ function EventCard({ event, expanded, onClick }) {
       boxShadow: expanded ? '0 12px 48px rgba(0,0,0,0.5), 0 0 20px rgba(225,6,0,0.1)' : 'none',
       position: 'relative',
       zIndex: expanded ? 10 : 1,
-    }}>
+      borderRadius: '16px',
+      overflow: 'hidden'
+    }} className={`event-card ${expanded ? 'expanded' : ''}`}>
       <div
         style={{ background: 'var(--surface-low)', cursor: 'pointer', height: '100%', display: 'flex', flexDirection: 'column' }}
         onClick={onClick}
@@ -233,11 +238,14 @@ function EventCard({ event, expanded, onClick }) {
             </div>
 
             {expanded && isPast && (
-              <div style={{ flex: '3', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', borderLeft: '1px solid rgba(255,255,255,0.05)', paddingLeft: '2rem' }}>
-                 {isSprint && <ResultPanel title="Sprint SQ" data={sprintQuali} isQuali={true} />}
-                 {isSprint && <ResultPanel title="Sprint Race" data={sprintRace} isQuali={false} />}
-                 <ResultPanel title="Qualifying" data={qualifying} isQuali={true} />
-                 <ResultPanel title="Race" data={race} isQuali={false} />
+              <div
+                style={{ flex: '3', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', borderLeft: '1px solid rgba(255,255,255,0.05)', paddingLeft: '2rem' }}
+                onClick={e => e.stopPropagation()}
+              >
+                 {isSprint && <ResultPanel title="Sprint SQ" data={sprintQuali} isQuali={true} loading={loading} />}
+                 {isSprint && <ResultPanel title="Sprint Race" data={sprintRace} isQuali={false} loading={loading} />}
+                 <ResultPanel title="Qualifying" data={qualifying} isQuali={true} loading={loading} />
+                 <ResultPanel title="Race" data={race} isQuali={false} loading={loading} />
               </div>
             )}
           </div>
@@ -288,7 +296,7 @@ function ScheduleApp() {
           <h1 style={{ fontFamily: 'var(--font-headline)', fontSize: 'clamp(1.8rem,4vw,3rem)', fontWeight: 900, fontStyle: 'italic', letterSpacing: '-0.03em', textTransform: 'uppercase', lineHeight: 1 }}>SEASON SCHEDULE</h1>
         </div>
 
-        <div style={{ background: 'rgba(0,0,0,0.35)', padding: '0.75rem 1.25rem', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.05)', minWidth: '14rem' }}>
+        <div style={{ padding: '0.75rem 0', minWidth: '14rem' }}>
           <div style={{ fontFamily: 'var(--font-headline)', fontSize: '0.55rem', fontWeight: 700, letterSpacing: '0.2em', color: 'var(--f1-red)', textTransform: 'uppercase', marginBottom: '0.5rem' }}>Championship Progress</div>
           <div style={{ height: '0.35rem', background: '#131313', borderRadius: '9999px', overflow: 'hidden', marginBottom: '0.4rem' }}>
             <div style={{ height: '100%', width: `${pct}%`, background: 'linear-gradient(90deg,#ff6b66,var(--f1-red))', transition: 'width 1s ease-out' }}></div>

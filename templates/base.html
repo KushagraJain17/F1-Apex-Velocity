@@ -39,14 +39,22 @@
             "body": ["Inter", "sans-serif"],
             "label": ["Space Grotesk", "sans-serif"],
           },
-          borderRadius: { DEFAULT: "0px", lg: "0px", xl: "0px", full: "9999px" },
+          borderRadius: {
+            DEFAULT: "12px",
+            "md": "14px",
+            "lg": "16px",
+            "xl": "24px",
+            "2xl": "32px",
+            full: "9999px"
+          },
         },
       },
     }
   </script>
   <!-- Global Design System -->
   <link rel="stylesheet" href="/static/global.css" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
   {% block head %}{% endblock %}
 </head>
 
@@ -63,7 +71,7 @@
         </a>
         <a href="/standings" class="nav-link {% if active_page=='standings' %}active{% endif %}">
           <span class="material-symbols-outlined">leaderboard</span>
-          <span>DRIVER STANDINGS</span>
+          <span>DRIVERS</span>
         </a>
         <a href="/standings/constructors" class="nav-link {% if active_page=='constructors' %}active{% endif %}">
           <span class="material-symbols-outlined">emoji_events</span>

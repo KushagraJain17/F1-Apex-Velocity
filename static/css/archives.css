@@ -32,6 +32,7 @@
   align-items: center;
   gap: 0.75rem;
   overflow: visible;
+  border-radius: 100px;
 }
 
 .selector-icon {
@@ -52,6 +53,7 @@
   cursor: pointer;
   padding: 0.6rem 1.2rem !important;
   white-space: nowrap;
+  border-radius: 100px;
 }
 
 .table-container {
@@ -64,12 +66,14 @@
 
 .data-table {
   width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed; /* CRITICAL FIX */
+  border-collapse: separate;
+  border-spacing: 0 0.75rem;
+  table-layout: fixed;
+  /* CRITICAL FIX */
 }
 
 /* Ensure header + body align */
-.data-table th, 
+.data-table th,
 .data-table td {
   padding: 0.75rem 1.25rem;
   white-space: nowrap;
@@ -77,51 +81,95 @@
   text-overflow: ellipsis;
 }
 
+.data-table thead tr {
+  background: transparent;
+}
+
+.data-table thead th {
+  font-family: var(--font-headline);
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* =========================
+   PREMIUM ROW STYLING
+   ========================= */
+
+.archive-row {
+  background: var(--surface-low);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+  border-top: 2px solid var(--team-color, transparent);
+  border-radius: 12px !important;
+}
+
+.archive-row:hover {
+  transform: translateY(-2px);
+  background: var(--surface-bright);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 10px color-mix(in srgb, var(--team-color), transparent 85%);
+}
+
+.archive-row td {
+  padding: 1.25rem !important;
+  border: none !important;
+}
+
+.archive-row td:first-child {
+  border-top-left-radius: 12px;
+  border-bottom-left-radius: 12px;
+}
+
+.archive-row td:last-child {
+  border-top-right-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
 /* =========================
    COLUMN WIDTHS (DRIVERS)
    ========================= */
 
-.col-pos { width: 8%; }
-.col-name { width: 28%; }
-.col-team { width: 22%; }
-.col-wins { width: 10%; }
-.col-podiums { width: 10%; }
-.col-pts { width: 12%; }
+.col-pos {
+  width: 80px;
+}
 
-/* =========================
-   OTHER TABLE TYPES
-   ========================= */
+.col-name {
+  width: auto;
+}
 
-.col-archive-stats { width: 120px; min-width: 120px; }
-.col-archive-points { width: 140px; min-width: 140px; }
+.col-team {
+  width: 20%;
+}
+
+.col-wins {
+  width: 140px;
+}
+
+.col-pts {
+  width: 160px;
+}
 
 /* =========================
    CELL STYLING
    ========================= */
 
 .pos-col {
-  width: 60px; /* FORCE column presence */
-  min-width: 60px;
-  text-align: left;
-  color: rgba(255,255,255,0.2);
+  color: rgba(255, 255, 255, 0.1);
   font-family: var(--font-headline);
   font-weight: 900;
   font-style: italic;
-  font-size: 1.1rem;
-}
-
-.qual-pos-col {
-  font-family: var(--font-headline);
-  font-weight: 900;
-  font-style: italic;
-  color: rgba(255,255,255,0.3);
+  font-size: 1.2rem;
 }
 
 .name-col {
   font-family: var(--font-headline);
-  font-weight: 700;
+  font-weight: 900;
   text-transform: uppercase;
-  color: var(--team-color, inherit);
+  color: var(--team-color, #fff);
 }
 
 .stat-val {
@@ -146,6 +194,7 @@
   font-weight: 700;
   color: var(--f1-red);
 }
+
 
 /* =========================
    EMPTY STATE
@@ -173,65 +222,65 @@
    ========================= */
 
 .archives-dropdown {
-    position: relative;
-    width: 100%;
-    min-width: 140px;
-    cursor: pointer;
+  position: relative;
+  width: 100%;
+  min-width: 140px;
+  cursor: pointer;
 }
 
 .archives-trigger {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    color: white;
-    font-family: var(--font-headline);
-    font-weight: 700;
-    padding-right: 1.5rem;
-    position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: white;
+  font-family: var(--font-headline);
+  font-weight: 700;
+  padding-right: 1.5rem;
+  position: relative;
 }
 
 .archives-trigger::after {
-    content: "expand_more";
-    font-family: 'Material Symbols Outlined';
-    position: absolute;
-    right: 0;
-    color: var(--f1-red);
-    font-size: 1.2rem;
+  content: "expand_more";
+  font-family: 'Material Symbols Outlined';
+  position: absolute;
+  right: 0;
+  color: var(--f1-red);
+  font-size: 1.2rem;
 }
 
 .archives-menu {
-    position: absolute;
-    top: calc(100% + 15px);
-    left: -1rem;
-    right: -1rem;
-    background: #1a1a1a;
-    border: 1px solid var(--outline-variant);
-    border-radius: 4px;
-    z-index: 5000;
-    display: none;
-    max-height: 350px;
-    overflow-y: auto;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8);
+  position: absolute;
+  top: calc(100% + 15px);
+  left: -1rem;
+  right: -1rem;
+  background: #1a1a1a;
+  border: 1px solid var(--outline-variant);
+  border-radius: 12px;
+  z-index: 5000;
+  display: none;
+  max-height: 350px;
+  overflow-y: auto;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.8);
 }
 
 .archives-item {
-    padding: 0.8rem 1.25rem;
-    color: white;
-    font-family: var(--font-headline);
-    font-weight: 500;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0.8rem 1.25rem;
+  color: white;
+  font-family: var(--font-headline);
+  font-weight: 500;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .archives-item:hover {
-    background: var(--f1-red);
-    padding-left: 1.5rem;
+  background: var(--f1-red);
+  padding-left: 1.5rem;
 }
 
 .archives-item.selected {
-    background: rgba(225, 6, 0, 0.15);
-    border-left: 4px solid var(--f1-red);
+  background: rgba(225, 6, 0, 0.15);
+  border-left: 4px solid var(--f1-red);
 }
 
 .archives-dropdown.active .archives-menu {
-    display: block;
+  display: block;
 }

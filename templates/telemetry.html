@@ -56,18 +56,16 @@
 
 <div class="tl-shell">
   <!-- Sidebar -->
-  <aside class="tl-sidebar">
+  <aside class="tl-sidebar" id="telemetrySidebar">
     <div class="tl-sidebar-hd">
-      <div class="tl-sidebar-title">Qualifying</div>
-      <div class="tl-sidebar-sub">Select driver to inspect lap</div>
+      <div>
+        <div class="tl-sidebar-title">Qualifying</div>
+        <div class="tl-sidebar-sub">Grid Standings</div>
+      </div>
     </div>
     <div class="tl-driver-list nice-scroll" id="driverList">
       <div class="tl-empty" style="padding: 2rem 1rem">
-        <span
-          class="material-symbols-outlined"
-          style="font-size: 2rem; opacity: 0.2"
-          >group</span
-        >
+        <span class="material-symbols-outlined" style="font-size: 2rem; opacity: 0.2">group</span>
         <div class="tl-lbl" style="margin-top: 1rem">Select a race</div>
       </div>
     </div>
@@ -75,29 +73,26 @@
 
   <!-- Main -->
   <div class="tl-main">
-    <!-- Top Nav -->
     <div class="tl-topbar">
-      <div style="display: flex; align-items: center; gap: 0.4rem">
-        <span class="tl-lbl">Year</span>
-        <select class="tl-select" id="yearSelect">
-          {% for y in years %}
-          <option value="{{ y }}">{{ y }}</option>
-          {% endfor %}
-        </select>
+      <div class="tl-select-group">
+        <div class="tl-select-item">
+          <span class="tl-lbl">Year</span>
+          <select class="tl-select" id="yearSelect">
+            {% for y in years %}
+            <option value="{{ y }}">{{ y }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="tl-select-item">
+          <span class="tl-lbl">Round</span>
+          <select class="tl-select" id="roundSelect">
+            <option value="">— Select —</option>
+          </select>
+        </div>
       </div>
-      <div style="display: flex; align-items: center; gap: 0.4rem">
-        <span class="tl-lbl">Round</span>
-        <select class="tl-select" id="roundSelect" style="min-width: 140px">
-          <option value="">— Select —</option>
-        </select>
-      </div>
-      <div style="display: flex; align-items: center; gap: 0.4rem">
-        <span class="tl-lbl">Driver</span>
-        <select class="tl-select" id="driverSelect" disabled>
-          <option value="">— Select —</option>
-        </select>
-      </div>
+
       <div class="tl-event-name" id="eventLabel">NO SESSION LOADED</div>
+      
       <div id="topSpinner" style="display: none">
         <div class="tl-spinner"></div>
       </div>
@@ -105,197 +100,124 @@
 
     <!-- Body -->
     <div class="tl-body">
-      <!-- Left: Charts -->
-      <div class="tl-charts-col">
+      <!-- Left: Primary Analysis Area (Charts) -->
+      <div class="tl-primary-area">
         <div class="tl-charts-scroll nice-scroll" id="chartsScroll">
-          <div class="tl-empty" style="margin-top: 40%">
-            <span
-              class="material-symbols-outlined"
-              style="font-size: 2.5rem; opacity: 0.2"
-              >query_stats</span
-            >
-            <div class="tl-lbl" style="margin-top: 1rem">Telemetry Data</div>
+          <div class="tl-empty" style="margin-top: 20%">
+            <span class="material-symbols-outlined" style="font-size: 3rem; opacity: 0.1">query_stats</span>
+            <div class="tl-lbl" style="margin-top: 1rem">Data Analysis Deck</div>
+            <p style="font-size: 0.55rem; color: var(--text-muted); margin-top: 0.5rem; letter-spacing: 0.1em;">SELECT A DRIVER TO INITIALIZE TELEMETRY</p>
+          </div>
+        </div>
+
+        <!-- Integrated Control Deck -->
+        <div class="tl-control-deck" id="playbackBar" style="display: none">
+          <div class="tl-deck-row">
+            <div class="tl-btn-group">
+              <button class="tl-cbtn" id="btnRewind" title="Restart">
+                <span class="material-symbols-outlined">restart_alt</span>
+              </button>
+              <button class="tl-cbtn tl-cbtn-active" id="btnPlay" title="Play / Pause">
+                <span class="material-symbols-outlined" id="playIcon">play_circle</span>
+                <span class="tl-btn-txt" id="playText" style="display: none">PLAY</span>
+              </button>
+              <button class="tl-cbtn" id="btnFF" title="Fast Forward">
+                <span class="material-symbols-outlined">fast_forward</span>
+              </button>
+            </div>
+
+            <div class="tl-scrub-container">
+              <div class="tl-scrub-track" id="scrubTrack">
+                <div class="tl-scrub-fill" id="scrubFill"></div>
+                <div class="tl-scrub-thumb" id="scrubThumb"></div>
+              </div>
+            </div>
+
+            <div class="tl-deck-meta">
+              <div class="tl-time-box" id="timeDisplay">0:00.000</div>
+              <select class="tl-select tl-select-sm" id="speedSel">
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1x</option>
+                <option value="2">2x</option>
+                <option value="4">4x</option>
+              </select>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Center: Track Map -->
-      <div class="tl-map-col" id="mapCol">
-        <div class="tl-map-container">
-          <svg
-            id="trackSvg"
-            viewBox="0 0 500 500"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <polyline
-              id="trackLine"
-              points=""
-              fill="none"
-              stroke="rgba(255,255,255,0.05)"
-              stroke-width="8"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-            <g id="trackHeatmap"></g>
-            <g id="trackCorners"></g>
-
-            <!-- Primary Driver -->
-            <circle
-              id="driverDot"
-              cx="-999"
-              cy="-999"
-              r="9"
-              fill="var(--f1-red)"
-              stroke="#fff"
-              stroke-width="2.5"
-            />
-            <text
-              id="driverDotLbl"
-              x="-999"
-              y="-999"
-              font-size="10"
-              fill="#fff"
-              font-family="monospace"
-              text-anchor="middle"
-              dy="-14"
-              font-weight="bold"
-            ></text>
-          </svg>
-        </div>
-        <div
-          style="
-            position: absolute;
-            bottom: 1rem;
-            left: 1rem;
-            font-family: var(--font-headline);
-            font-size: 0.5rem;
-            color: rgba(255, 255, 255, 0.2);
-            letter-spacing: 0.2em;
-          "
-        >
-          DYNAMIC TRACK TRACE
-        </div>
-      </div>
-
-      <!-- Right: Stats & Weather -->
-      <div class="tl-stats-col" id="statsCol" style="display: none">
-        <!-- Weather -->
-        <div class="tl-wcard" id="weatherCard">
-          <div class="tl-lbl" style="color: var(--f1-red)">
-            Weather Conditions
+      <!-- Right: Reference Hub -->
+      <div class="tl-reference-hub" id="referenceHub">
+        <!-- Mini Track Map -->
+        <div class="tl-map-card">
+          <div class="tl-card-hd">
+            <span class="tl-lbl">Track Position</span>
           </div>
-          <div class="tl-wgrid">
-            <div class="tl-witem">
-              <span class="tl-w-val" id="wAir">—</span
-              ><span class="tl-w-lbl">Air Temp</span>
-            </div>
-            <div class="tl-witem">
-              <span class="tl-w-val" id="wTrack">—</span
-              ><span class="tl-w-lbl">Track Temp</span>
-            </div>
-            <div class="tl-witem">
-              <span class="tl-w-val" id="wHum">—</span
-              ><span class="tl-w-lbl">Humidity</span>
-            </div>
-            <div class="tl-witem">
-              <span class="tl-w-val" id="wWind">—</span
-              ><span class="tl-w-lbl">Wind</span>
-            </div>
+          <div class="tl-map-container" id="mapCol">
+            <svg id="trackSvg" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+              <polyline id="trackLine" points="" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" />
+              <g id="trackHeatmap"></g>
+              <g id="trackCorners"></g>
+              <circle id="driverDot" cx="-999" cy="-999" r="10" fill="var(--f1-red)" stroke="#fff" stroke-width="2.5" />
+              <text id="driverDotLbl" x="-999" y="-999" font-size="11" fill="#fff" font-family="monospace" text-anchor="middle" dy="-16" font-weight="bold"></text>
+            </svg>
           </div>
         </div>
 
-        <!-- Driver Card -->
-        <div class="tl-dcard" id="driverCard"></div>
+        <!-- Live Metrics Grid -->
+        <div class="tl-metrics-card" id="statsCol" style="display: none">
+          <div class="tl-card-hd">
+            <span class="tl-lbl">Live Telemetry</span>
+          </div>
+          
+          <div class="tl-metrics-grid">
+            <div class="tl-metric-item">
+              <span class="tl-metric-val" id="liveSpeed">—</span>
+              <span class="tl-metric-unit">KM/H</span>
+            </div>
+            <div class="tl-metric-item">
+              <span class="tl-metric-val" id="liveGear">—</span>
+              <span class="tl-metric-unit">GEAR</span>
+            </div>
+            <div class="tl-metric-item">
+              <span class="tl-metric-val" id="liveThrottle">—</span>
+              <span class="tl-metric-unit">THROTTLE</span>
+            </div>
+            <div class="tl-metric-item">
+              <span class="tl-metric-val" id="liveBrake">OFF</span>
+              <span class="tl-metric-unit">BRAKE</span>
+            </div>
+          </div>
 
-        <!-- Live Readouts -->
-        <div class="tl-live-grid">
-          <div class="tl-live-cell">
-            <div class="tl-lbl">Speed</div>
-            <div class="tl-live-val" id="liveSpeed">—</div>
-            <div
-              style="
-                font-size: 0.4rem;
-                color: var(--text-muted);
-                margin-top: 2px;
-              "
-            >
-              KM/H
-            </div>
-          </div>
-          <div class="tl-live-cell">
-            <div class="tl-lbl">Gear</div>
-            <div class="tl-live-val" id="liveGear">—</div>
-          </div>
-          <div class="tl-live-cell">
-            <div class="tl-lbl">Throttle</div>
-            <div class="tl-live-val" id="liveThrottle" style="color: #2ef550">
-              —
-            </div>
-          </div>
-          <div class="tl-live-cell">
-            <div class="tl-lbl">Brake</div>
-            <div
-              class="tl-live-val"
-              id="liveBrake"
-              style="color: var(--f1-red)"
-            >
-              OFF
-            </div>
+          <div class="tl-drs-zone">
+            <span class="tl-lbl">DRS Status</span>
+            <div id="liveDrs" class="badge badge-dim">OFF</div>
           </div>
         </div>
 
-        <div style="padding: 1rem">
-          <div class="tl-lbl" style="margin-bottom: 0.5rem">DRS Status</div>
-          <div
-            id="liveDrs"
-            class="badge badge-dim"
-            style="width: 100%; text-align: center; padding: 0.5rem"
-          >
-            OFF
+        <!-- Driver & Session Intel -->
+        <div class="tl-intel-card" id="intelCol" style="display: none">
+          <div class="tl-dcard" id="driverCard"></div>
+          
+          <div class="tl-weather-mini">
+            <div class="tl-w-row">
+              <span class="tl-w-lbl">AIR</span>
+              <span class="tl-w-val" id="wAir">—</span>
+            </div>
+            <div class="tl-w-row">
+              <span class="tl-w-lbl">TRACK</span>
+              <span class="tl-w-val" id="wTrack">—</span>
+            </div>
+            <div class="tl-w-row">
+              <span class="tl-w-lbl">HUM</span>
+              <span class="tl-w-val" id="wHum">—</span>
+            </div>
+            <div class="tl-w-row">
+              <span class="tl-w-lbl">WIND</span>
+              <span class="tl-w-val" id="wWind">—</span>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- Playback Footer -->
-    <div class="tl-footer" id="playbackBar" style="display: none">
-      <div class="tl-btn-group">
-        <button class="tl-cbtn" id="btnRewind" title="Restart">
-          <span class="material-symbols-outlined">restart_alt</span> RESTART
-        </button>
-        <button
-          class="tl-cbtn tl-cbtn-active"
-          id="btnPlay"
-          title="Play / Pause"
-        >
-          <span class="material-symbols-outlined" id="playIcon"
-            >play_circle</span
-          >
-          <span id="playText">PLAY</span>
-        </button>
-        <button class="tl-cbtn" id="btnFF" title="Fast Forward (2x)">
-          <span class="material-symbols-outlined">fast_forward</span> SPEED+
-        </button>
-      </div>
-
-      <div class="tl-scrub-container">
-        <div class="tl-scrub-track" id="scrubTrack">
-          <div class="tl-scrub-fill" id="scrubFill" style="width: 0%"></div>
-          <div class="tl-scrub-thumb" id="scrubThumb" style="left: 0%"></div>
-        </div>
-      </div>
-
-      <div class="tl-time-box" id="timeDisplay">0:00.000</div>
-
-      <div style="display: flex; align-items: center; gap: 0.5rem">
-        <span class="tl-lbl">Speed</span>
-        <select class="tl-select" id="speedSel" style="min-width: 60px">
-          <option value="0.5">0.5x</option>
-          <option value="1" selected>1x</option>
-          <option value="2">2x</option>
-          <option value="4">4x</option>
-          <option value="8">8x</option>
-        </select>
       </div>
     </div>
   </div>

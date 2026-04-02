@@ -37,7 +37,7 @@
 1. **Clone the repository**:
    ```bash
    git clone https://github.com/KushagraJain17/F1-Apex-Velocity.git
-   cd APEX-VELOCITY
+   cd F1-Apex-Velocity
    ```
 
 2. **Create and activate a virtual environment**:

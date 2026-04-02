@@ -8,6 +8,9 @@
 {% endblock %}
 
 {% block content %}
+<!-- Race schedule data for the calendar widget -->
+<script type="application/json" id="calendar-events-data">{{ events | tojson }}</script>
+
 <div class="page-content dashboard-main-content">
 
   <!-- Hero Grid -->
@@ -44,34 +47,87 @@
     </div>
     {% endif %}
 
-    <!-- Championship Leaders -->
-    <div class="card leaders-card animate-in">
-      <div class="leaders-card__header">
-        <h3 class="leaders-card__title">Drivers' Championship Leaders</h3>
-        <a href="/standings" class="leaders-card__link">VIEW ALL</a>
-      </div>
-
-      <div class="leaders-card__list">
-        {% if top_drivers %}
-        {% for d in top_drivers %}
-        <div class="driver-leader-row" style="--team-color: {{ d.Color }};">
-          <div class="driver-leader-row__pos">{{ loop.index }}</div>
-          <div class="driver-leader-row__info">
-            <div class="driver-leader-row__name">{{ d.Name }}</div>
-            <div class="driver-leader-row__team">{{ d.Team }}</div>
-          </div>
-          <div class="driver-leader-row__points">
-            <div class="driver-leader-row__points-value">{{ d.Points|int }}</div>
-            <div class="driver-leader-row__points-label">PTS</div>
+    <!-- Race Calendar (now in the main hero grid) -->
+    <div class="race-calendar-section animate-in">
+      <div class="race-calendar-header">
+        <div class="race-calendar-header__left">
+          <span class="material-symbols-outlined race-calendar-header__icon">calendar_month</span>
+          <div>
+            <h3 class="race-calendar-header__title">RACE CALENDAR</h3>
+            <p class="race-calendar-header__subtitle">2026 FIA Formula 1 World Championship</p>
           </div>
         </div>
-        {% endfor %}
-        {% else %}
-        <p class="leaders-card__empty">Awaiting season data...</p>
-        {% endif %}
+        <a href="/schedule" class="race-calendar-header__link">
+          FULL SCHEDULE
+          <span class="material-symbols-outlined" style="font-size:0.85rem;">arrow_forward</span>
+        </a>
+      </div>
+  
+      <div class="race-calendar-body">
+        <!-- Calendar Navigation -->
+        <div class="calendar-nav">
+          <button class="calendar-nav__btn" id="cal-prev" aria-label="Previous month">
+            <span class="material-symbols-outlined">chevron_left</span>
+          </button>
+          <div class="calendar-nav__title" id="cal-month-title">January 2026</div>
+          <button class="calendar-nav__btn" id="cal-next" aria-label="Next month">
+            <span class="material-symbols-outlined">chevron_right</span>
+          </button>
+        </div>
+  
+        <!-- Calendar Grid -->
+        <div class="calendar-weekdays">
+          <div class="calendar-weekday">MON</div>
+          <div class="calendar-weekday">TUE</div>
+          <div class="calendar-weekday">WED</div>
+          <div class="calendar-weekday">THU</div>
+          <div class="calendar-weekday">FRI</div>
+          <div class="calendar-weekday">SAT</div>
+          <div class="calendar-weekday">SUN</div>
+        </div>
+        <div class="calendar-grid" id="cal-grid"></div>
+      </div>
+  
+      <!-- Legend -->
+      <div class="calendar-legend">
+        <div class="calendar-legend__item">
+          <span class="calendar-legend__dot calendar-legend__dot--race"></span>
+          <span>Race Weekend</span>
+        </div>
+        <div class="calendar-legend__item">
+          <span class="calendar-legend__dot calendar-legend__dot--sprint"></span>
+          <span>Sprint Weekend</span>
+        </div>
+        <div class="calendar-legend__item">
+          <span class="calendar-legend__dot calendar-legend__dot--past"></span>
+          <span>Completed</span>
+        </div>
+        <div class="calendar-legend__item">
+          <span class="calendar-legend__dot calendar-legend__dot--today"></span>
+          <span>Today</span>
+        </div>
       </div>
     </div>
 
+  </div>
+
+  <!-- Race Tooltip (position:fixed, lives outside calendar to avoid clipping) -->
+  <div class="calendar-tooltip" id="cal-tooltip">
+    <div class="calendar-tooltip__round" id="cal-tip-round"></div>
+    <div class="calendar-tooltip__name" id="cal-tip-name"></div>
+    <div class="calendar-tooltip__meta">
+      <span class="material-symbols-outlined" style="font-size:0.85rem;">location_on</span>
+      <span id="cal-tip-location"></span>
+    </div>
+    <div class="calendar-tooltip__meta">
+      <span class="material-symbols-outlined" style="font-size:0.85rem;">calendar_month</span>
+      <span id="cal-tip-date"></span>
+    </div>
+    <div class="calendar-tooltip__badges" id="cal-tip-badges"></div>
+    <a href="/schedule" class="calendar-tooltip__link" id="cal-tip-link">
+      VIEW DETAILS
+      <span class="material-symbols-outlined" style="font-size:0.75rem;">chevron_right</span>
+    </a>
   </div>
 
   <!-- Quick Access Links -->

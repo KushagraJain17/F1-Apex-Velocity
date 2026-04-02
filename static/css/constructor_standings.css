@@ -2,74 +2,106 @@
  * APEX VELOCITY - Constructor Standings Page Styles
  */
 
-/* ── Top 3 Podium Grid ───────────────────────────────────── */
-.constructor-podium-grid {
+/* ── Top 3 Podium Placeholder ─────────────────────────── */
+/* Podium styles are moved to global.css */
+
+
+/* ── Full Table / Classification ─────────────────────────── */
+.constructor-classification {
+  margin-top: 3.5rem;
+}
+
+.constructor-classification__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
   margin-bottom: 2rem;
+  padding: 0 0.5rem;
 }
 
-.constructor-podium-card {
-  padding: 1.5rem;
-  position: relative;
-  overflow: hidden;
-  border-top: 4px solid var(--team-color);
-}
-
-.constructor-podium-card__bg-num {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
+.constructor-classification__title-group p {
   font-family: var(--font-headline);
-  font-size: 3.5rem;
+  font-size: 1.5rem;
   font-weight: 900;
   font-style: italic;
-  opacity: 0.08;
   color: #fff;
-  pointer-events: none;
-}
-
-.constructor-podium-card__badge {
-  margin-bottom: 0.75rem;
-  display: inline-block;
-}
-
-.constructor-podium-card__name {
-  font-family: var(--font-headline);
-  font-size: 1.6rem;
-  font-weight: 900;
-  font-style: italic;
-  letter-spacing: -0.02em;
   text-transform: uppercase;
-  margin-bottom: 0.4rem;
-  color: var(--team-color);
 }
 
-.constructor-podium-card__drivers {
-  margin-bottom: 1.25rem;
-}
-
-.constructor-podium-card__points {
-  font-family: var(--font-headline);
-  font-size: 2.5rem;
-  font-weight: 900;
-}
-
-/* ── Full Table ──────────────────────────────────────────── */
 .constructor-table-wrap {
   overflow-x: auto;
+  padding: 0.5rem 0;
+}
+
+.constructor-table-wrap .data-table {
+  border-collapse: separate;
+  border-spacing: 0 1rem;
+  background: transparent;
+  width: 100%;
+}
+
+.constructor-table-wrap .data-table thead tr {
+  background: transparent;
+  border-bottom: none;
+}
+
+.constructor-table-wrap .data-table thead th {
+  padding: 0.5rem 1.5rem;
+  font-family: var(--font-headline);
+  font-size: 0.65rem;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.constructor-row {
+  background: var(--surface-low);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  position: relative;
+  overflow: hidden;
+  border-top: 2px solid var(--team-color, transparent);
+  border-radius: 16px !important;
+}
+
+.constructor-row:hover {
+  transform: translateY(-4px) scale(1.005);
+  background: var(--surface-bright);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.5), 0 0 15px color-mix(in srgb, var(--team-color), transparent 80%);
+}
+
+.constructor-row td {
+  padding: 1.5rem;
+  border: none !important;
+}
+
+.constructor-row td:first-child {
+  padding-left: 2rem;
+  border-top-left-radius: 16px;
+  border-bottom-left-radius: 16px;
+}
+
+.constructor-row td:last-child {
+  padding-right: 2rem;
+  border-top-right-radius: 16px;
+  border-bottom-right-radius: 16px;
 }
 
 /* Table cell typography */
 .constructor-pos-cell {
+  width: 60px;
   font-family: var(--font-headline);
   font-weight: 900;
   font-style: italic;
-  font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.2);
+  font-size: 1.25rem;
+  color: rgba(255, 255, 255, 0.08); /* Faint large numbers */
 }
 
 .constructor-name-cell {
   font-family: var(--font-headline);
-  font-weight: 700;
+  font-weight: 900;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
   text-transform: uppercase;
   color: var(--team-color);
 }
@@ -92,25 +124,18 @@
   text-align: center;
   font-family: var(--font-headline);
   font-weight: 900;
-  font-size: 1.3rem;
+  font-size: 1.5rem;
 }
 
 .constructor-trend-cell {
-  width: 100px;
+  width: 120px;
   text-align: center;
-}
-
-.constructor-progress-track {
-  margin-top: 1rem;
-}
-
-.constructor-progress-fill {
-  width: var(--fill-width, 0%);
-  background: var(--team-color);
 }
 
 .constructor-table-empty {
   text-align: center;
   color: var(--text-muted);
-  padding: 2rem;
+  padding: 4rem;
+  background: var(--surface-low);
+  border-radius: 16px;
 }

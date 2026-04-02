@@ -70,7 +70,8 @@ def root(request: Request, db: Session = Depends(db_mod.get_db)):
         {
             "active_page": "home",
             "next_event": next_event,
-            "top_drivers": top_drivers
+            "top_drivers": top_drivers,
+            "events": events,
         },
     )
 
@@ -258,7 +259,7 @@ def _get_session_results_data(db, year, round_num, session_type):
             leader_time = results.iloc[0]['Time']
             for i, (_, row) in enumerate(results.iterrows()):
                 points, status, raw_time = row.get('Points', 0), str(row.get('Status', '')).lower(), row.get('Time')
-                display_time = utils.format_td(raw_time) if i == 0 else "-"
+                display_time = utils.format_td(raw_time) if i == 0 else ("" if session_type == 'S' else "-")
                 
                 if i > 0:
                     if 'lap' in status or 'lapped' in status:
@@ -289,7 +290,7 @@ def _get_session_results_data(db, year, round_num, session_type):
                     if not pd.isna(best) and not pd.isna(leader_best):
                         display_time = utils.format_td(best - leader_best, is_gap=True)
                     else:
-                        display_time = "–"
+                        display_time = "" if session_type in ['SQ', 'SS'] else "–"
                 data.append({
                     'Position': int(row['Position']) if not pd.isna(row['Position']) else (i + 1),
                     'Driver': row['BroadcastName'], 'Team': row['TeamName'],

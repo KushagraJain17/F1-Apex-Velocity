@@ -13,114 +13,10 @@
   padding: 0.75rem 1.25rem;
 }
 
-/* ── Podium Cards Grid ───────────────────────────────────── */
-.podium-grid {
-  margin-bottom: 2rem;
-}
+/* ── Podium Placeholder ──────────────────────────────────── */
+/* Podium styles are moved to global.css */
 
-/* P1 Hero Card */
-.podium-p1 {
-  padding: 2rem;
-  position: relative;
-  overflow: hidden;
-  border-top: 4px solid var(--team-color);
-}
 
-.podium-p1__bg-num {
-  position: absolute;
-  top: 0;
-  right: 0;
-  font-family: var(--font-headline);
-  font-size: 6rem;
-  font-weight: 900;
-  font-style: italic;
-  opacity: 0.06;
-  line-height: 1;
-  color: var(--team-color);
-  pointer-events: none;
-}
-
-.podium-p1__badge {
-  margin-bottom: 1rem;
-  display: inline-block;
-}
-
-.podium-p1__name {
-  font-family: var(--font-headline);
-  font-size: 2.6rem;
-  font-weight: 900;
-  font-style: italic;
-  letter-spacing: -0.03em;
-  text-transform: uppercase;
-  line-height: 1;
-  margin-bottom: 0.5rem;
-  color: var(--team-color);
-}
-
-.podium-p1__team {
-  font-family: var(--font-headline);
-  font-size: 0.8rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  margin-bottom: 1.5rem;
-}
-
-.podium-p1__stat-value {
-  font-family: var(--font-headline);
-  font-size: 2.2rem;
-  font-weight: 900;
-}
-
-.podium-p1__stat-value--pts {
-  color: var(--f1-red);
-}
-
-/* P2 / P3 Cards */
-.podium-p2,
-.podium-p3 {
-  padding: 1.25rem;
-  position: relative;
-  border-top: 2px solid var(--team-color);
-}
-
-.podium-p2__bg-num,
-.podium-p3__bg-num {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  font-family: var(--font-headline);
-  font-size: 2.5rem;
-  font-weight: 900;
-  font-style: italic;
-  color: color-mix(in srgb, var(--team-color), transparent 90%);
-  pointer-events: none;
-}
-
-.podium-p2__name,
-.podium-p3__name {
-  font-family: var(--font-headline);
-  font-size: 1.4rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  text-transform: uppercase;
-  margin-bottom: 0.2rem;
-  color: var(--team-color);
-}
-
-.podium-p2__points,
-.podium-p3__points {
-  font-family: var(--font-headline);
-  font-size: 1.8rem;
-  font-weight: 900;
-}
-
-.podium-p2__footer,
-.podium-p3__footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-}
 
 /* ── Trend Badge ─────────────────────────────────────────── */
 .trend-up {
@@ -153,6 +49,62 @@
 /* ── Full Standings Table ────────────────────────────────── */
 .standings-table-container {
   overflow-x: auto;
+  padding: 0.5rem 0;
+}
+
+.standings-table-container .data-table {
+  border-collapse: separate;
+  border-spacing: 0 1.25rem;
+  background: transparent;
+  width: 100%;
+}
+
+.standings-table-container .data-table thead tr {
+  background: transparent;
+  border-bottom: none;
+}
+
+.standings-table-container .data-table thead th {
+  padding: 0.5rem 1rem;
+  border: none;
+  font-family: var(--font-headline);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.driver-row {
+  background: var(--surface-low);
+  border-radius: 16px !important;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  position: relative;
+  overflow: hidden;
+  border-top: 2px solid var(--team-color, var(--f1-red));
+}
+
+.driver-row:hover {
+  transform: translateY(-4px) scale(1.002);
+  background: var(--surface-bright);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.5), 0 0 15px color-mix(in srgb, var(--team-color), transparent 80%);
+}
+
+.driver-row td {
+  padding: 1.5rem 1.25rem;
+  border: none !important;
+}
+
+.driver-row td:first-child {
+  padding-left: 2rem;
+  border-top-left-radius: 16px;
+  border-bottom-left-radius: 16px;
+}
+
+.driver-row td:last-child {
+  padding-right: 2rem;
+  border-top-right-radius: 16px;
+  border-bottom-right-radius: 16px;
 }
 
 /* Table cell typography */

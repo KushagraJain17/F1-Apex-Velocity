@@ -71,6 +71,11 @@ body {
 
 a { text-decoration: none; color: inherit; }
 
+/* Global Form Elements rounding */
+input, select, textarea, button {
+  border-radius: 8px;
+}
+
 /* ── 4. Scrollbar ─────────────────────────────────────────── */
 ::-webkit-scrollbar          { width: 4px; }
 ::-webkit-scrollbar-track    { background: var(--bg-low); }
@@ -86,17 +91,21 @@ a { text-decoration: none; color: inherit; }
 /* ── 6. Top Nav Bar ───────────────────────────────────────── */
 .nav-top {
   position: fixed;
-  top: 0; left: 0; right: 0;
-  height: var(--nav-h);
-  z-index: 50;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 2rem;
-  background: rgba(10,10,10,0.8);
-  backdrop-filter: blur(12px) saturate(180%);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: rgba(10, 10, 10, 0.8);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08); /* Glass inner glow */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
 }
 
 .nav-cluster {
@@ -111,18 +120,27 @@ a { text-decoration: none; color: inherit; }
 
 .nav-brand {
   font-family: var(--font-headline);
-  font-size: 1.35rem;
+  font-size: 1.2rem;
   font-weight: 900;
   font-style: italic;
   color: var(--f1-red);
-  letter-spacing: -0.04em;
+  letter-spacing: -0.02em;
   text-transform: uppercase;
   white-space: nowrap;
-  transition: opacity var(--transition-fast), filter var(--transition-fast);
+  transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
-.nav-brand:hover {
-  opacity: 0.9;
-  filter: brightness(1.1);
+
+.nav-brand::before {
+  content: "";
+  display: block;
+  width: 4px;
+  height: 20px;
+  background: var(--f1-red);
+  transform: skewX(-15deg);
+  border-radius: 2px;
 }
 
 .nav-links {
@@ -134,20 +152,35 @@ a { text-decoration: none; color: inherit; }
 
 .nav-link {
   font-family: var(--font-headline);
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.6);
-  transition: color var(--transition-fast);
-  padding-bottom: 2px;
+  color: rgba(255, 255, 255, 0.4);
+  transition: all 0.2s ease;
+  padding: 0.6rem 1rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
+  border-radius: 100px;
+  position: relative;
 }
-.nav-link .material-symbols-outlined { font-size: 1.1rem; }
-.nav-link:hover              { color: #fff; }
-.nav-link.active             { color: var(--f1-red); border-bottom: 2px solid var(--f1-red); }
+
+.nav-link:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-link.active {
+  color: #fff;
+  background: var(--f1-red);
+  box-shadow: 0 4px 15px rgba(225, 6, 0, 0.3);
+}
+
+.nav-link .material-symbols-outlined {
+  font-size: 1rem;
+  font-variation-settings: 'FILL' 1;
+}
 
 .nav-top-status {
   display: flex;
@@ -155,7 +188,7 @@ a { text-decoration: none; color: inherit; }
   gap: 0.75rem;
   background: rgba(255,255,255,0.05);
   padding: 0.5rem 1.25rem;
-  border-radius: 2px;
+  border-radius: 100px;
   border: 1px solid rgba(255,255,255,0.05);
 }
 
@@ -175,6 +208,7 @@ a { text-decoration: none; color: inherit; }
   transition: color var(--transition-fast), background var(--transition-fast);
   display: flex;
   align-items: center;
+  border-radius: 8px;
 }
 .nav-icon-btn:hover { color: #fff; background: rgba(255,255,255,0.08); }
 
@@ -183,6 +217,7 @@ a { text-decoration: none; color: inherit; }
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.1);
   flex-shrink: 0;
+  border-radius: 8px;
 }
 .nav-avatar img { width: 100%; height: 100%; object-fit: cover; }
 
@@ -256,6 +291,8 @@ a { text-decoration: none; color: inherit; }
   text-transform: uppercase;
   color: rgba(255,255,255,0.45);
   transition: color var(--transition-fast), background var(--transition-fast);
+  border-radius: 8px;
+  margin: 0 0.5rem;
 }
 .nav-side-link:hover { color: var(--f1-red); background: var(--surface-high); }
 .nav-side-link.active { background: var(--f1-red); color: #fff; }
@@ -281,6 +318,7 @@ a { text-decoration: none; color: inherit; }
   letter-spacing: 0.25em;
   text-transform: uppercase;
   transition: filter var(--transition-fast), transform var(--transition-fast);
+  border-radius: 12px;
 }
 .btn-engine:hover  { filter: brightness(1.15); }
 .btn-engine:active { transform: scale(0.97); }
@@ -326,7 +364,18 @@ a { text-decoration: none; color: inherit; }
   gap: 1rem;
   margin-bottom: 2.5rem;
   padding-left: 1.25rem;
-  border-left: 4px solid var(--f1-red);
+  position: relative;
+}
+
+.page-header::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--f1-red);
+  border-radius: 50px;
 }
 
 .page-title {
@@ -353,6 +402,8 @@ a { text-decoration: none; color: inherit; }
 .card {
   background: var(--surface-low);
   transition: background var(--transition-fast);
+  border-radius: 16px;
+  overflow: hidden;
 }
 .card:hover { background: var(--surface-bright); }
 
@@ -439,21 +490,24 @@ a { text-decoration: none; color: inherit; }
   letter-spacing: 0.18em;
   text-transform: uppercase;
   padding: 0.2rem 0.6rem;
+  border-radius: 100px;
 }
 .badge-red    { background: var(--f1-red); color: #fff; }
 .badge-dim    { background: rgba(255,255,255,0.07); color: var(--text); }
-.badge-live   { background: var(--f1-red-dim); color: var(--f1-red); outline: 1px solid var(--f1-red); }
+.badge-live   { background: var(--f1-red-dim); color: var(--f1-red); outline: 1px solid var(--f1-red); border-radius: 100px; }
 
 /* ── 14. Progress Bars ───────────────────────────────────── */
 .progress-track {
   height: 0.25rem;
   background: var(--surface-highest);
   overflow: hidden;
+  border-radius: 100px;
 }
 .progress-fill {
   height: 100%;
   background: linear-gradient(90deg, #ff6b66, var(--f1-red));
   transition: width 0.8s ease-out;
+  border-radius: 100px;
 }
 
 /* ── 15. Accent Lines ────────────────────────────────────── */
@@ -478,10 +532,196 @@ a { text-decoration: none; color: inherit; }
 /* ── 18. Nice-scroll (panel scrollbars) ─────────────────── */
 .nice-scroll::-webkit-scrollbar       { width: 4px; }
 .nice-scroll::-webkit-scrollbar-track { background: transparent; }
-.nice-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+.nice-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 20px; }
 .nice-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
 /* ── 19. Responsive helper ─────────────────────────────── */
 @media (max-width: 1023px) {
   .hide-mobile { display: none !important; }
+}
+/* ── 20. Podium / Classification Podium ─────────────────── */
+.podium-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 1rem;
+  margin: 4rem 0 6rem;
+  padding: 0 1rem;
+  min-height: 480px;
+}
+
+.podium-card {
+  flex: 1;
+  max-width: 320px;
+  background: var(--surface-low);
+  border-radius: 20px 20px 0 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 1;
+}
+
+.podium-card:hover {
+  transform: translateY(-10px);
+  z-index: 2;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+}
+
+.podium-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--team-color, var(--f1-red));
+  border-radius: 20px 20px 0 0;
+}
+
+.podium-card__rank {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 60px;
+  background: var(--surface-bright);
+  border: 4px solid var(--team-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-headline);
+  font-size: 1.8rem;
+  font-weight: 900;
+  font-style: italic;
+  color: #fff;
+  z-index: 3;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+}
+
+.podium-card__content {
+  padding: 3rem 1.5rem 1.5rem;
+  text-align: center;
+  flex-grow: 1;
+}
+
+.podium-card__name {
+  font-family: var(--font-headline);
+  font-size: 1.6rem;
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+  line-height: 1.1;
+  margin-bottom: 0.5rem;
+  color: var(--team-color);
+}
+
+.podium-card__team {
+  font-family: var(--font-headline);
+  font-size: 0.70rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+  line-height: 1.4;
+}
+
+.podium-card__stats {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.podium-card__stats .stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.podium-card__stats .stat-label {
+  font-size: 0.55rem;
+  opacity: 0.6;
+  font-family: var(--font-headline);
+  letter-spacing: 0.1em;
+}
+
+.podium-card__stats .stat-value {
+  font-family: var(--font-headline);
+  font-size: 1.4rem;
+  font-weight: 900;
+}
+
+.podium-step {
+  height: 100px;
+  background: linear-gradient(to bottom, var(--surface-low), rgba(18, 18, 18, 0));
+  border-left: 1px solid rgba(255,255,255,0.03);
+  border-right: 1px solid rgba(255,255,255,0.03);
+}
+
+/* Specific heights and styles for different ranks */
+.podium-p1 {
+  height: 400px;
+  max-width: 380px;
+  background: linear-gradient(135deg, var(--surface-low) 0%, #1a1a1a 100%);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.podium-p1 .podium-step { height: 160px; }
+.podium-p1 .podium-card__name { font-size: 2rem; }
+.podium-p1 .podium-card__rank { width: 80px; height: 80px; font-size: 2.2rem; top: -40px; }
+
+.podium-p2 { height: 320px; }
+.podium-p2 .podium-step { height: 100px; }
+
+.podium-p3 { height: 280px; }
+.podium-p3 .podium-step { height: 60px; }
+
+@media (max-width: 1024px) {
+  .podium-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 3rem;
+    margin: 2.5rem 0;
+    min-height: auto;
+  }
+  .podium-card {
+    width: 100%;
+    max-width: 450px;
+    height: auto !important;
+  }
+  .podium-step { display: none; }
+  .podium-card__content { padding: 2.5rem 1.5rem 1.5rem; }
+  .podium-card__rank { width: 50px; height: 50px; font-size: 1.4rem; top: -25px; }
+  .podium-p1 .podium-card__rank { width: 60px; height: 60px; font-size: 1.8rem; top: -30px; }
+}
+/* ── 21. Glassmorphic Typography ────────────────────────── */
+*, h1, h2, h3, h4, 
+.page-title, .hero-title, .event-name, 
+.nav-brand, .nav-link, .nav-side-link {
+  /* Specular Highlight + Deep Refraction Shadow */
+  text-shadow: 
+    0.5px 0.5px 0px rgba(255, 255, 255, 0.05),
+    0px 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+h1, h2, h3, h4, h5, h6,
+.page-title, .hero-title, .event-name, 
+.nav-brand, .nav-link, .nav-side-link,
+.card-title, .podium-card__name, .stat-value {
+  /* Increased Polish for headings */
+  text-shadow: 
+    0.5px 0.5px 0px rgba(255, 255, 255, 0.15),
+    0px 6px 18px rgba(0, 0, 0, 0.5);
+}
+
+/* Red Glass Text (Branding) */
+[style*="color: var(--f1-red)"], [style*="color: #E10600"], .f1-red-text {
+  text-shadow: 
+    0.5px 0.5px 0px rgba(255, 255, 255, 0.1),
+    0px 4px 20px rgba(225, 6, 0, 0.2) !important;
+}
+
+p, span, .text-muted, .stat-label, .upcoming-label {
+  color: rgba(229, 226, 225, 0.85); /* Slightly translucent */
 }
