@@ -2,6 +2,9 @@ import os
 from sqlalchemy import create_engine, Column, Integer, String, Float, Text, Enum, JSON, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Database configuration
 # To use MySQL, replace 'sqlite:///f1_data.db' with 'mysql://user:password@localhost/dbname'

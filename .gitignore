@@ -14,7 +14,7 @@ venv.bak/
 # Project specific
 cache/
 .env
-
+*.db
 # System files
 .DS_Store
 Thumbs.db

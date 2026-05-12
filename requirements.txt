@@ -8,3 +8,5 @@ numpy
 matplotlib
 requests
 requests-cache
+python-dotenv
+psycopg2-binary

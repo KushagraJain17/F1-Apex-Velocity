@@ -1,4 +1,5 @@
 import os
+import asyncio
 import fastf1
 import pandas as pd
 import warnings
@@ -27,6 +28,40 @@ if not os.path.exists('cache'):
 fastf1.Cache.enable_cache('cache')
 
 app = FastAPI()
+
+async def update_standings_periodic():
+    while True:
+        try:
+            print("Background Task: Checking for latest F1 standings...")
+            db = next(db_mod.get_db())
+            year = CURRENT_YEAR
+            
+            # Fetch latest round directly from API
+            ergast = Ergast()
+            res = ergast.get_driver_standings(season=year)
+            if len(res.description) > 0:
+                latest_round = int(res.description['round'].iloc[0])
+                
+                # Check if we already have this round in DB
+                cached = db_mod.get_driver_standings(db, year, latest_round)
+                if not cached:
+                    print(f"Background Task: New round detected ({latest_round}). Updating database...")
+                    # Fetch and save to DB
+                    _get_driver_standings_data(db, year, latest_round)
+                    _get_constructor_standings_data(db, year, latest_round)
+                    print("Background Task: Database updated successfully.")
+                else:
+                    print(f"Background Task: Standings up to date (Round {latest_round}).")
+                    
+        except Exception as e:
+            print(f"Background update error: {e}")
+        
+        # wait 6 hours (6 * 60 * 60 seconds)
+        await asyncio.sleep(21600)
+
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(update_standings_periodic())
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -137,8 +172,6 @@ def schedule(request: Request, db: Session = Depends(db_mod.get_db)):
     return templates.TemplateResponse(
         request, "schedule.html", {"events": data.get("events", []), "active_page": "schedule"}
     )
-
-# Removed Teams and Drivers routes as per user request
 
 def _get_ergast_round(season: int):
     """Return the latest available round number for a given season via Ergast."""
@@ -252,7 +285,7 @@ def _get_session_results_data(db, year, round_num, session_type):
 
     try:
         session = fastf1.get_session(year, round_num, session_type)
-        session.load(telemetry=False, weather=False, messages=False)
+        session.load(telemetry=False, weather=False, messages=True)
         results = session.results
         data = []
         if session_type in ['R', 'S']:
@@ -280,9 +313,16 @@ def _get_session_results_data(db, year, round_num, session_type):
                     'Time': display_time, 'Color': utils.get_team_color(row['TeamName'])
                 })
         else: # Q or SQ or SS
+            # Ensure results are sorted by position so that leader is at index 0
+            results['SortPos'] = pd.to_numeric(results['Position'], errors='coerce')
+            results = results.sort_values(by='SortPos')
+            
             leader_best = None
             for i, (_, row) in enumerate(results.iterrows()):
-                best = row.get('Q3') or row.get('Q2') or row.get('Q1')
+                best = row.get('Q3')
+                if pd.isna(best): best = row.get('Q2')
+                if pd.isna(best): best = row.get('Q1')
+                
                 if i == 0:
                     leader_best = best
                     display_time = utils.format_td(best)
