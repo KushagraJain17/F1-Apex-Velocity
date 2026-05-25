@@ -79,6 +79,14 @@ def get_db():
     finally:
         db.close()
 
+async def get_db_dep():
+    """Async generator for FastAPI Depends() — avoids Python 3.14 contextlib.throw() issue."""
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
 # Helper functions
 def save_schedule(db, year, events):
     # Clear old schedule for the year
@@ -125,6 +133,11 @@ def save_driver_standings(db, year, round_num, drivers):
         db.add(db_d)
     db.commit()
 
+def delete_driver_standings(db, year, round_num):
+    """Delete driver standings for a specific year/round so they can be re-fetched."""
+    db.query(DriverStanding).filter(DriverStanding.year == year, DriverStanding.round == round_num).delete()
+    db.commit()
+
 def get_driver_standings(db, year, round_num):
     drivers = db.query(DriverStanding).filter(DriverStanding.year == year, DriverStanding.round == round_num).order_by(DriverStanding.pos).all()
     if not drivers: return None
@@ -137,8 +150,6 @@ def get_driver_standings(db, year, round_num):
 def save_constructor_standings(db, year, round_num, teams):
     db.query(ConstructorStanding).filter(ConstructorStanding.year == year, ConstructorStanding.round == round_num).delete()
     for t in teams:
-        # Note: In app.py, teams list sometimes doesn't have Pos if derived from row index
-        # But we'll store it by order if Pos is missing
         db_t = ConstructorStanding(
             year=year, round=round_num,
             pos=teams.index(t) + 1,
@@ -148,6 +159,11 @@ def save_constructor_standings(db, year, round_num, teams):
             trend_val=t.get('TrendVal', 0)
         )
         db.add(db_t)
+    db.commit()
+
+def delete_constructor_standings(db, year, round_num):
+    """Delete constructor standings for a specific year/round so they can be re-fetched."""
+    db.query(ConstructorStanding).filter(ConstructorStanding.year == year, ConstructorStanding.round == round_num).delete()
     db.commit()
 
 def get_constructor_standings(db, year, round_num):

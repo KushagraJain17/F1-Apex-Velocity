@@ -41,23 +41,19 @@ async def update_standings_periodic():
                 res = ergast.get_driver_standings(season=year)
                 if len(res.description) > 0:
                     latest_round = int(res.description['round'].iloc[0])
-                    
-                    # Check if we already have this round in DB
-                    cached = db_mod.get_driver_standings(db, year, latest_round)
-                    if not cached:
-                        print(f"Background Task: New round detected ({latest_round}). Updating database...")
-                        # Fetch and save to DB
-                        _get_driver_standings_data(db, year, latest_round)
-                        _get_constructor_standings_data(db, year, latest_round)
-                        print("Background Task: Database updated successfully.")
-                    else:
-                        print(f"Background Task: Standings up to date (Round {latest_round}).")
+                    print(f"Background Task: Latest round is {latest_round}. Refreshing standings...")
+                    # Always overwrite — points change within the same round after each race weekend
+                    db_mod.delete_driver_standings(db, year, latest_round)
+                    db_mod.delete_constructor_standings(db, year, latest_round)
+                    _get_driver_standings_data(db, year, latest_round)
+                    _get_constructor_standings_data(db, year, latest_round)
+                    print("Background Task: Standings updated successfully.")
                     
         except Exception as e:
             print(f"Background update error: {e}")
         
-        # wait 6 hours (6 * 60 * 60 seconds)
-        await asyncio.sleep(21600)
+        # wait 1 hour
+        await asyncio.sleep(3600)
 
 @app.on_event("startup")
 async def startup_event():
@@ -69,7 +65,7 @@ templates = Jinja2Templates(directory="templates")
 
 
 @app.get("/")
-def root(request: Request, db: Session = Depends(db_mod.get_db)):
+def root(request: Request, db: Session = Depends(db_mod.get_db_dep)):
     # 1. Get schedule to find the next round
     year = CURRENT_YEAR
     sched_data = api_schedule(year, db)
@@ -111,7 +107,7 @@ def root(request: Request, db: Session = Depends(db_mod.get_db)):
     )
 
 @app.get("/api/schedule/{year}")
-def api_schedule(year: int, db: Session = Depends(db_mod.get_db)):
+def api_schedule(year: int, db: Session = Depends(db_mod.get_db_dep)):
     # Try database first
     cached_events = db_mod.get_schedule(db, year)
     if cached_events:
@@ -166,7 +162,7 @@ def api_schedule(year: int, db: Session = Depends(db_mod.get_db)):
         return {"status": "error", "message": f"External API Error: {str(e)}", "events": []}
 
 @app.get("/schedule")
-def schedule(request: Request, db: Session = Depends(db_mod.get_db)):
+def schedule(request: Request, db: Session = Depends(db_mod.get_db_dep)):
     year = CURRENT_YEAR
     data = api_schedule(year, db)
     return templates.TemplateResponse(
@@ -192,13 +188,14 @@ def _safe_int(val, default=0):
         return default
 
 def _get_driver_standings_data(db, year, round_num):
-    """Internal helper to get driver standings from DB. Only fetches from live API if year is 2026."""
-    cached = db_mod.get_driver_standings(db, year, round_num)
-    if cached:
-        for d in cached: d['Color'] = utils.get_team_color(d.get('Team', ''))
-        return cached
-
-    if year != CURRENT_YEAR: return []
+    """Internal helper to get driver standings. For the current year, always fetches live from Ergast."""
+    # For archive years only, serve from DB cache
+    if year != CURRENT_YEAR:
+        cached = db_mod.get_driver_standings(db, year, round_num)
+        if cached:
+            for d in cached: d['Color'] = utils.get_team_color(d.get('Team', ''))
+            return cached
+        return []
 
     try:
         ergast = Ergast()
@@ -234,13 +231,14 @@ def _get_driver_standings_data(db, year, round_num):
     except Exception: return []
 
 def _get_constructor_standings_data(db, year, round_num):
-    """Internal helper to get constructor standings from DB. Only fetches from live API if year is 2026."""
-    cached = db_mod.get_constructor_standings(db, year, round_num)
-    if cached:
-        for t in cached: t['Color'] = utils.get_team_color(t.get('TeamName', ''))
-        return cached
-
-    if year != CURRENT_YEAR: return []
+    """Internal helper to get constructor standings. For the current year, always fetches live from Ergast."""
+    # For archive years only, serve from DB cache
+    if year != CURRENT_YEAR:
+        cached = db_mod.get_constructor_standings(db, year, round_num)
+        if cached:
+            for t in cached: t['Color'] = utils.get_team_color(t.get('TeamName', ''))
+            return cached
+        return []
 
     try:
         ergast = Ergast()
@@ -346,7 +344,7 @@ def _get_session_results_data(db, year, round_num, session_type):
         return []
 
 @app.get("/standings")
-def standings(request: Request, year: int = CURRENT_YEAR, db: Session = Depends(db_mod.get_db)):
+def standings(request: Request, year: int = CURRENT_YEAR, db: Session = Depends(db_mod.get_db_dep)):
     try:
         current_round = db_mod.get_latest_standing_round(db, year)
         if year == CURRENT_YEAR and not current_round: current_round = _get_ergast_round(year)
@@ -356,7 +354,7 @@ def standings(request: Request, year: int = CURRENT_YEAR, db: Session = Depends(
         return templates.TemplateResponse(request, "standings.html", {"drivers": [], "season": year, "active_page": "archives"})
 
 @app.get("/standings/constructors")
-def constructor_standings(request: Request, year: int = CURRENT_YEAR, db: Session = Depends(db_mod.get_db)):
+def constructor_standings(request: Request, year: int = CURRENT_YEAR, db: Session = Depends(db_mod.get_db_dep)):
     try:
         current_round = db_mod.get_latest_standing_round(db, year)
         if year == CURRENT_YEAR and not current_round: current_round = _get_ergast_round(year)
@@ -366,29 +364,29 @@ def constructor_standings(request: Request, year: int = CURRENT_YEAR, db: Sessio
         return templates.TemplateResponse(request, "constructor_standings.html", {"teams": [], "season": year, "active_page": "constructors"})
 
 @app.get("/api/results/{year}/{round}")
-def api_race_results(year: int, round: int, db: Session = Depends(db_mod.get_db)):
+def api_race_results(year: int, round: int, db: Session = Depends(db_mod.get_db_dep)):
     data = _get_session_results_data(db, year, round, 'R')
     return {"status": "success" if data else "error", "data": data}
 
 @app.get("/api/sprint/{year}/{round}")
-def api_sprint_results(year: int, round: int, db: Session = Depends(db_mod.get_db)):
+def api_sprint_results(year: int, round: int, db: Session = Depends(db_mod.get_db_dep)):
     data = _get_session_results_data(db, year, round, 'S')
     return {"status": "success" if data else "error", "data": data}
 
 @app.get("/api/sprint_shootout/{year}/{round}")
-def api_sprint_shootout_results(year: int, round: int, db: Session = Depends(db_mod.get_db)):
+def api_sprint_shootout_results(year: int, round: int, db: Session = Depends(db_mod.get_db_dep)):
     # 2023 used 'SS' (Sprint Shootout), others use 'SQ'
     session_code = 'SS' if year == 2023 else 'SQ'
     data = _get_session_results_data(db, year, round, session_code)
     return {"status": "success" if data else "error", "data": data}
 
 @app.get("/api/qualifying/{year}/{round}")
-def api_qualifying_results(year: int, round: int, db: Session = Depends(db_mod.get_db)):
+def api_qualifying_results(year: int, round: int, db: Session = Depends(db_mod.get_db_dep)):
     data = _get_session_results_data(db, year, round, 'Q')
     return {"status": "success" if data else "error", "data": data}
 
 @app.get("/archives")
-def archives(request: Request, year: int = 2025, round: str = "final", view: str = "drivers", db: Session = Depends(db_mod.get_db)):
+def archives(request: Request, year: int = 2025, round: str = "final", view: str = "drivers", db: Session = Depends(db_mod.get_db_dep)):
     # 1. Available years
     years = ARCHIVE_YEARS
     if year not in years: year = 2025
@@ -447,7 +445,7 @@ def archives(request: Request, year: int = 2025, round: str = "final", view: str
 # ─────────────────────────────────────────────
 
 @app.get("/telemetry")
-def telemetry_page(request: Request, db: Session = Depends(db_mod.get_db)):
+def telemetry_page(request: Request, db: Session = Depends(db_mod.get_db_dep)):
     """Render the telemetry explorer page."""
     years = [CURRENT_YEAR] + sorted(ARCHIVE_YEARS, reverse=True)
     return templates.TemplateResponse(
