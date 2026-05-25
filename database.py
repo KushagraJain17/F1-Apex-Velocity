@@ -1,4 +1,5 @@
 import os
+from contextlib import contextmanager
 from sqlalchemy import create_engine, Column, Integer, String, Float, Text, Enum, JSON, func
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -10,7 +11,12 @@ load_dotenv()
 # To use MySQL, replace 'sqlite:///f1_data.db' with 'mysql://user:password@localhost/dbname'
 DB_URL = os.environ.get('DATABASE_URL', 'sqlite:///f1_data.db')
 
-engine = create_engine(DB_URL, connect_args={"check_same_thread": False} if "sqlite" in DB_URL else {})
+engine = create_engine(
+    DB_URL,
+    connect_args={"check_same_thread": False} if "sqlite" in DB_URL else {},
+    pool_pre_ping=True,
+    pool_recycle=3600
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -65,6 +71,7 @@ class SessionResult(Base):
 # Create tables
 Base.metadata.create_all(bind=engine)
 
+@contextmanager
 def get_db():
     db = SessionLocal()
     try:

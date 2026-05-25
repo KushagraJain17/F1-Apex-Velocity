@@ -33,25 +33,25 @@ async def update_standings_periodic():
     while True:
         try:
             print("Background Task: Checking for latest F1 standings...")
-            db = next(db_mod.get_db())
-            year = CURRENT_YEAR
-            
-            # Fetch latest round directly from API
-            ergast = Ergast()
-            res = ergast.get_driver_standings(season=year)
-            if len(res.description) > 0:
-                latest_round = int(res.description['round'].iloc[0])
+            with db_mod.get_db() as db:
+                year = CURRENT_YEAR
                 
-                # Check if we already have this round in DB
-                cached = db_mod.get_driver_standings(db, year, latest_round)
-                if not cached:
-                    print(f"Background Task: New round detected ({latest_round}). Updating database...")
-                    # Fetch and save to DB
-                    _get_driver_standings_data(db, year, latest_round)
-                    _get_constructor_standings_data(db, year, latest_round)
-                    print("Background Task: Database updated successfully.")
-                else:
-                    print(f"Background Task: Standings up to date (Round {latest_round}).")
+                # Fetch latest round directly from API
+                ergast = Ergast()
+                res = ergast.get_driver_standings(season=year)
+                if len(res.description) > 0:
+                    latest_round = int(res.description['round'].iloc[0])
+                    
+                    # Check if we already have this round in DB
+                    cached = db_mod.get_driver_standings(db, year, latest_round)
+                    if not cached:
+                        print(f"Background Task: New round detected ({latest_round}). Updating database...")
+                        # Fetch and save to DB
+                        _get_driver_standings_data(db, year, latest_round)
+                        _get_constructor_standings_data(db, year, latest_round)
+                        print("Background Task: Database updated successfully.")
+                    else:
+                        print(f"Background Task: Standings up to date (Round {latest_round}).")
                     
         except Exception as e:
             print(f"Background update error: {e}")
